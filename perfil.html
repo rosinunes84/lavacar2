@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Perfil do Usuário</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .perfil-container {
+      background-color: white;
+      padding: 30px;
+      max-width: 400px;
+      margin: 40px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .info {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #3366ff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #264d99;
+    }
+  </style>
+</head>
+<body>
+  <h1>Meu Perfil</h1>
+  <div id="perfil-container">
+    <p><strong>Email:</strong> <span id="email"></span></p>
+    <p><strong>Função:</strong> <span id="role"></span></p>
+  </div>
+
+  <script type="module">
+    // IMPORTAÇÃO DO SUPABASE DEVE VIR PRIMEIRO
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    // CRIAÇÃO DO CLIENT SUPABASE ANTES DE QUALQUER USO
+    const supabase = createClient(
+      'https://kiqvzarmwooveklezzfm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+    );
+
+    async function carregarPerfil() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('Você precisa estar logado.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      document.getElementById('email').textContent = user.email;
+
+      // BUSCAR ROLE NA TABELA USUÁRIOS
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar role:', error);
+        document.getElementById('role').textContent = 'Desconhecida';
+      } else {
+        document.getElementById('role').textContent = data.role || 'Não definida';
+      }
+    }
+
+    carregarPerfil();
+  </script>
+</body>
+</html>

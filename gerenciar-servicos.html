@@ -1,0 +1,38 @@
+
+<!-- gerenciar_servicos.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gerenciar Serviços</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="dashboard-body">
+  <header class="dashboard-header">
+    <h1 class="titulo-dashboard">Gerenciar Serviços</h1>
+    <button onclick="window.location.href='admin_dashboard.html'" class="voltar-btn">Voltar</button>
+  </header>
+
+  <section class="form-servico">
+    <input type="text" id="nomeServico" placeholder="Nome do Serviço" />
+    <input type="number" id="precoServico" placeholder="Preço (R$)" />
+    <button onclick="adicionarServico()">Adicionar Serviço</button>
+  </section>
+
+  <main class="tabela-container">
+    <table class="tabela-agendamentos">
+      <thead>
+        <tr>
+          <th>Serviço</th>
+          <th>Preço</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="listaServicos"></tbody>
+    </table>
+  </main>
+
+  <script type="module" src="js/gerenciar_servicos.js"></script>
+</body>
+</html>

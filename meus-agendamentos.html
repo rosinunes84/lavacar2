@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Meus Agendamentos</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .agendamento {
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Meus Agendamentos</h1>
+  <div id="lista-agendamentos"></div>
+
+  <script>
+  const supabaseUrl = 'https://SEU-PROJETO.supabase.co'; // substitua pela sua URL
+  const supabaseKey = 'SUA-CHAVE-ANON'; // substitua pela sua chave pública
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const {
+      data: { user },
+      error: userError
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      alert('Usuário não autenticado.');
+      return;
+    }
+
+    // Buscar nome do usuário
+    const { data: usuario, error: usuarioError } = await supabase
+      .from('usuarios')
+      .select('nome')
+      .eq('id', user.id)
+      .single();
+
+    const nomeUsuario = usuario?.nome || 'Usuário';
+
+    // Buscar agendamentos do usuário
+    const { data: agendamentos, error: agendamentoError } = await supabase
+      .from('agendamentos')
+      .select('*')
+      .eq('usuario_id', user.id)
+      .order('data', { ascending: true });
+
+    if (agendamentoError) {
+      console.error('Erro ao carregar agendamentos:', agendamentoError);
+      return;
+    }
+
+    const container = document.getElementById('lista-agendamentos');
+
+    if (agendamentos.length === 0) {
+      container.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
+      return;
+    }
+
+    agendamentos.forEach(ag => {
+      const div = document.createElement('div');
+      div.classList.add('agendamento');
+      div.innerHTML = `
+        <h3>Serviço: ${ag.tipo_servico}</h3>
+        <p>Veículo: ${ag.veiculo}</p>
+        <p>Data: ${ag.data} (${ag.periodo})</p>
+        <p><strong>Cliente:</strong> ${nomeUsuario}</p>
+      `;
+      container.appendChild(div);
+    });
+  });
+</script>
+
+</body>
+</html>

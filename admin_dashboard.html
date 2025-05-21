@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Admin - LavaCar</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* Estilos simples para visualização */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f0f0f5;
+      color: #333;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-voltar {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-voltar:hover {
+      background: #0056b3;
+    }
+    main {
+      margin-top: 20px;
+    }
+    .card {
+      background: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    #contador-agendamentos, #contador-agendamentos-amanha {
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .agendamento-card {
+      margin-bottom: 15px;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Dashboard Administrativa</h1>
+    <button onclick="window.location.href='home.html'" class="btn-voltar">Voltar</button>
+  </header>
+
+  <main>
+    <section class="card">
+  <h2>Agendamentos</h2>
+  <p id="contador-hoje">Agendamentos de hoje: 0</p>
+  <p id="contador-amanha">Agendamentos de amanhã: 0</p>
+  <div id="lista-agendamentos">
+    <p>Carregando agendamentos...</p>
+  </div>
+</section>
+
+  </main>
+
+  <script type="module" src="js/admin_dashboard.js"></script>
+</body>
+</html>

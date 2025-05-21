@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cadastro | LavaCar</title>
+</head>
+<body>
+  <h2>Cadastro</h2>
+  <form id="form-signup">
+    <label for="nome">Nome:</label>
+    <input id="nome" type="text" required />
+
+    <label for="email">Email:</label>
+    <input id="email" type="email" required />
+
+    <label for="password">Senha:</label>
+    <input id="password" type="password" required minlength="6" />
+
+    <button type="submit">Cadastrar</button>
+  </form>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const SUPABASE_URL = "https://kiqvzarmwooveklezzfm.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById("form-signup");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const nome = form.nome.value.trim();
+      const email = form.email.value.trim();
+      const password = form.password.value.trim();
+
+      // Faz signup
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+
+      if (signUpError) {
+        alert("Erro no cadastro: " + signUpError.message);
+        return;
+      }
+
+      // Espera o usuário ser criado
+      const userId = signUpData.user?.id;
+      if (!userId) {
+        alert("Erro: usuário não criado.");
+        return;
+      }
+
+      // Importante: Aqui, para garantir que o supabase client está com o token do usuário, fazemos login automático (signIn)
+      // Pois signUp não autentica automaticamente no modo email confirmacao (depende da configuração)
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        alert("Erro ao autenticar usuário após cadastro: " + signInError.message);
+        return;
+      }
+
+      // Agora sim, com usuário autenticado, insere na tabela usuarios
+      const { error: insertError } = await supabase
+        .from("usuarios")
+        .insert([{ id: userId, nome }]);
+
+      if (insertError) {
+        alert("Usuário criado, mas erro ao salvar nome: " + insertError.message);
+        return;
+      }
+
+      alert("Cadastro realizado com sucesso! Verifique seu e-mail.");
+      window.location.href = "login.html";
+    });
+  </script>
+</body>
+</html>

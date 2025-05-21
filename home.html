@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home - Lava-Car</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #eee;
+      text-align: center;
+      padding: 2rem;
+    }
+    header {
+      margin-bottom: 2rem;
+    }
+    #logo {
+      width: 150px;
+      margin-bottom: 1rem;
+    }
+    button {
+      background-color: #1e90ff;
+      border: none;
+      color: white;
+      padding: 1rem 2rem;
+      margin: 0.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0f67d1;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img id="logo" src="img/logo.png" alt="Logo Lava-Car" />
+    <h1>Bem-vindo ao Lava-Car</h1>
+  </header>
+
+  <main>
+    <button id="btnAgendar">Agendar</button>
+    <button id="btnMeusAgendamentos">Meus Agendamentos</button>
+    <button id="btnPerfil">Perfil</button>
+    <button id="btnAdmin">Painel Administrativo</button>
+    <button id="btnSair">Sair</button>
+  </main>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Script principal -->
+  <script>
+    const supabase = window.supabase.createClient(
+      'https://kiqvzarmwooveklezzfm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+    );
+
+    async function verificarSessao() {
+      const { data, error } = await supabase.auth.getUser();
+      if (!data?.user || error) {
+        window.location.href = 'index.html';
+      } else {
+        console.log("Usuário logado:", data.user.id);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      verificarSessao();
+
+      document.getElementById("btnAgendar").addEventListener("click", () => {
+        window.location.href = "agendar.html";
+      });
+
+      document.getElementById("btnPerfil").addEventListener("click", () => {
+        window.location.href = "perfil.html";
+      });
+
+      document.getElementById("btnMeusAgendamentos").addEventListener("click", () => {
+        window.location.href = "meus-agendamentos.html";
+      });
+
+      document.getElementById("btnAdmin").addEventListener("click", () => {
+        window.location.href = "admin_dashboard.html";
+      });
+
+      document.getElementById("btnSair").addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.href = "index.html";
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="google" content="notranslate">
+  <title>Bem-vindo | LavaCar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1e90ff;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+    }
+    button {
+      background: white;
+      color: #1e90ff;
+      border: none;
+      padding: 15px 30px;
+      margin: 10px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #f0f0f0;
+    }
+    .logo {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="logo">
+    <img src="img/logo.png" alt="Logo do Lava-Car" style="width: 150px; height: auto;">
+  </div>
+
+  <h1>Bem-vindo ao TownPark</h1>
+  <button id="btn-entrar">Entrar</button>
+  <button id="btn-cadastrar">Cadastrar</button>
+
+  <script>
+    document.getElementById("btn-entrar").onclick = () => {
+      window.location.href = "login.html";
+    };
+    document.getElementById("btn-cadastrar").onclick = () => {
+      window.location.href = "signup.html";
+    };
+  </script>
+</body>
+</html>
