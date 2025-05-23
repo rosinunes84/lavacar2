@@ -123,6 +123,25 @@
     .close:hover {
       color: #000;
     }
+
+    /* Novo estilo para resumo dos agendamentos */
+    .resumo-agendamentos {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 25px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #0077cc;
+    }
+    .resumo-item {
+      background: #d0e7ff;
+      padding: 15px 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgb(0 119 204 / 0.15);
+      min-width: 150px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -133,6 +152,12 @@
     <button class="btn" onclick="window.location.href='gerenciar-servicos.html'">
       Gerenciar Serviços
     </button>
+
+    <!-- Resumo de agendamentos hoje e amanhã -->
+    <div class="resumo-agendamentos">
+      <div class="resumo-item" id="agendamentosHoje">Agendamentos Hoje: 0</div>
+      <div class="resumo-item" id="agendamentosAmanha">Agendamentos Amanhã: 0</div>
+    </div>
 
     <div id="listaAgendamentos"></div>
   </div>
@@ -189,7 +214,50 @@
         return;
       }
 
+      await carregarResumoAgendamentos();
       carregarAgendamentos();
+    }
+
+    // Função para carregar quantidade de agendamentos hoje e amanhã
+    async function carregarResumoAgendamentos() {
+      const hoje = new Date();
+      const amanha = new Date(hoje);
+      amanha.setDate(hoje.getDate() + 1);
+
+      // Formata datas para 'YYYY-MM-DD'
+      const formatarData = (data) => {
+        const y = data.getFullYear();
+        const m = String(data.getMonth() + 1).padStart(2, '0');
+        const d = String(data.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      };
+
+      const dataHoje = formatarData(hoje);
+      const dataAmanha = formatarData(amanha);
+
+      // Busca quantidade agendamentos para hoje
+      const { count: countHoje, error: errHoje } = await supabase
+        .from('agendamentos')
+        .select('id', { count: 'exact', head: true })
+        .eq('data', dataHoje)
+        .neq('status', 'Cancelado');
+
+      // Busca quantidade agendamentos para amanhã
+      const { count: countAmanha, error: errAmanha } = await supabase
+        .from('agendamentos')
+        .select('id', { count: 'exact', head: true })
+        .eq('data', dataAmanha)
+        .neq('status', 'Cancelado');
+
+      if (errHoje || errAmanha) {
+        console.error('Erro ao buscar resumo agendamentos:', errHoje || errAmanha);
+        document.getElementById('agendamentosHoje').textContent = 'Erro ao carregar dados';
+        document.getElementById('agendamentosAmanha').textContent = 'Erro ao carregar dados';
+        return;
+      }
+
+      document.getElementById('agendamentosHoje').textContent = `Agendamentos Hoje: ${countHoje}`;
+      document.getElementById('agendamentosAmanha').textContent = `Agendamentos Amanhã: ${countAmanha}`;
     }
 
     // Carrega TODOS agendamentos (sem filtro)
@@ -213,59 +281,78 @@
       }
 
       data.forEach(agendamento => {
-        const item = document.createElement("div");
-        item.className = "agendamento-item";
-        item.innerHTML = `
+        const div = document.createElement("div");
+        div.className = "agendamento-item";
+
+        div.innerHTML = `
           <p><strong>ID:</strong> ${agendamento.id}</p>
-          <p><strong>Usuário ID:</strong> ${agendamento.usuario_id}</p>
           <p><strong>Data:</strong> ${agendamento.data}</p>
           <p><strong>Período:</strong> ${agendamento.periodo}</p>
-          <p><strong>Serviço:</strong> ${agendamento.tipo_servico}</p>
+          <p><strong>Serviço:</strong> ${agendamento.servico ? agendamento.servico.nome : agendamento.tipo_servico}</p>
           <p><strong>Status:</strong> ${agendamento.status}</p>
-          <button class="btn btn-editar" onclick="abrirModalEditar('${agendamento.id}', '${agendamento.data}', '${agendamento.periodo}', '${agendamento.tipo_servico}', '${agendamento.status}')">Editar</button>
-          <button class="btn btn-excluir" onclick="excluirAgendamento('${agendamento.id}')">Excluir</button>
-          <hr>
+          <button class="btn btn-editar" data-id="${agendamento.id}">Editar</button>
+          <button class="btn btn-excluir" data-id="${agendamento.id}">Excluir</button>
         `;
-        lista.appendChild(item);
+
+        lista.appendChild(div);
+      });
+
+      // Botões editar
+      document.querySelectorAll(".btn-editar").forEach(btn => {
+        btn.addEventListener("click", () => abrirModalEditar(btn.getAttribute("data-id")));
+      });
+
+      // Botões excluir
+      document.querySelectorAll(".btn-excluir").forEach(btn => {
+        btn.addEventListener("click", () => excluirAgendamento(btn.getAttribute("data-id")));
       });
     }
 
-    // Abre modal e preenche dados
-    window.abrirModalEditar = (id, data, periodo, tipo_servico, status) => {
+    // Abre modal para editar agendamento
+    async function abrirModalEditar(id) {
       agendamentoEditandoId = id;
-      document.getElementById('data').value = data;
-      document.getElementById('periodo').value = periodo;
-      document.getElementById('tipo_servico').value = tipo_servico;
-      document.getElementById('status').value = status;
-      document.getElementById('modalEditar').style.display = 'block';
-    };
 
-    // Fecha modal
-    document.getElementById('fecharModal').onclick = () => {
-      document.getElementById('modalEditar').style.display = 'none';
-      agendamentoEditandoId = null;
-    };
+      // Busca dados do agendamento para preencher o formulário
+      const { data, error } = await supabase
+        .from('agendamentos')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    // Fecha modal se clicar fora do conteúdo
-    window.onclick = function(event) {
-      const modal = document.getElementById('modalEditar');
-      if (event.target == modal) {
-        modal.style.display = "none";
-        agendamentoEditandoId = null;
-      }
-    };
-
-    // Salva alterações do agendamento
-    document.getElementById('formEditar').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!agendamentoEditandoId) {
-        alert("Erro: Nenhum agendamento selecionado.");
+      if (error || !data) {
+        alert("Erro ao buscar agendamento.");
         return;
       }
-      const data = document.getElementById('data').value;
-      const periodo = document.getElementById('periodo').value;
-      const tipo_servico = document.getElementById('tipo_servico').value;
-      const status = document.getElementById('status').value;
+
+      // Preencher campos do formulário
+      document.getElementById("data").value = data.data;
+      document.getElementById("periodo").value = data.periodo;
+      document.getElementById("tipo_servico").value = data.tipo_servico || '';
+      document.getElementById("status").value = data.status;
+
+      document.getElementById("modalEditar").style.display = "block";
+    }
+
+    // Fecha modal
+    document.getElementById("fecharModal").addEventListener("click", () => {
+      document.getElementById("modalEditar").style.display = "none";
+    });
+
+    window.onclick = function(event) {
+      const modal = document.getElementById("modalEditar");
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    };
+
+    // Salvar edição do agendamento
+    document.getElementById("formEditar").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = document.getElementById("data").value;
+      const periodo = document.getElementById("periodo").value;
+      const tipo_servico = document.getElementById("tipo_servico").value;
+      const status = document.getElementById("status").value;
 
       const { error } = await supabase
         .from('agendamentos')
@@ -273,18 +360,20 @@
         .eq('id', agendamentoEditandoId);
 
       if (error) {
-        alert("Erro ao atualizar agendamento: " + error.message);
-      } else {
-        alert("Agendamento atualizado com sucesso!");
-        document.getElementById('modalEditar').style.display = 'none';
-        agendamentoEditandoId = null;
-        carregarAgendamentos();
+        alert("Erro ao salvar agendamento.");
+        console.error(error);
+        return;
       }
+
+      alert("Agendamento atualizado com sucesso!");
+      document.getElementById("modalEditar").style.display = "none";
+      carregarResumoAgendamentos();
+      carregarAgendamentos();
     });
 
     // Excluir agendamento
-    window.excluirAgendamento = async (id) => {
-      if (!confirm("Confirma a exclusão deste agendamento?")) return;
+    async function excluirAgendamento(id) {
+      if (!confirm("Tem certeza que deseja excluir este agendamento?")) return;
 
       const { error } = await supabase
         .from('agendamentos')
@@ -292,13 +381,17 @@
         .eq('id', id);
 
       if (error) {
-        alert("Erro ao excluir agendamento: " + error.message);
-      } else {
-        alert("Agendamento excluído com sucesso!");
-        carregarAgendamentos();
+        alert("Erro ao excluir agendamento.");
+        console.error(error);
+        return;
       }
-    };
 
+      alert("Agendamento excluído com sucesso!");
+      carregarResumoAgendamentos();
+      carregarAgendamentos();
+    }
+
+    // Inicializa a dashboard
     verificarSessao();
   </script>
 </body>

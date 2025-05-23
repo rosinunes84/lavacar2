@@ -88,7 +88,7 @@ async function carregarAgendamentos() {
     let query = supabase
       .from('agendamentos')
       .select('*')
-      .order('data', { ascending: false });
+      .order('data', { ascending: true }); // ordem crescente para facilitar depois
 
     if (!isAdmin && usuarioAtual) {
       query = query.eq('usuario_id', usuarioAtual.id);
@@ -105,7 +105,14 @@ async function carregarAgendamentos() {
     let totalHoje = 0;
     let totalAmanha = 0;
 
-    for (const agendamento of data) {
+    // separa os agendamentos do dia atual e os demais
+    const agendamentosHoje = data.filter(a => a.data === hoje);
+    const agendamentosOutros = data.filter(a => a.data !== hoje);
+
+    // concatena: primeiro os de hoje, depois os demais
+    const agendamentosOrdenados = [...agendamentosHoje, ...agendamentosOutros];
+
+    for (const agendamento of agendamentosOrdenados) {
       const dataAgendamento = agendamento.data;
       const nomeUsuario = await getNomeUsuario(agendamento.usuario_id);
 
