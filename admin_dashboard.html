@@ -196,7 +196,7 @@
     async function carregarAgendamentos() {
       const { data, error } = await supabase
         .from('agendamentos')
-        .select('*')
+        .select('*, servico:servico_id (nome)')
         .order('data', { ascending: true });
 
       if (error) {

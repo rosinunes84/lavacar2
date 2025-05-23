@@ -121,3 +121,188 @@ button {
   float: right;
   cursor: pointer;
 }
+/* ====== Estilo para Gerenciar Serviços ====== */
+
+.dashboard-body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f7fa;
+  padding: 20px;
+  color: #333;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.titulo-dashboard {
+  font-size: 2rem;
+  color: #222;
+}
+
+.voltar-btn {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.voltar-btn:hover {
+  background-color: #357ABD;
+}
+
+/* Form de adicionar serviço */
+
+.form-servico {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.form-servico input[type="text"],
+.form-servico input[type="number"] {
+  padding: 10px 14px;
+  font-size: 1rem;
+  border: 1.8px solid #ccc;
+  border-radius: 8px;
+  width: 220px;
+  transition: border-color 0.3s ease;
+}
+
+.form-servico input[type="text"]:focus,
+.form-servico input[type="number"]:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+
+#btnAdicionarServico {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  min-width: 140px;
+}
+
+#btnAdicionarServico:hover:not(:disabled) {
+  background-color: #1e874b;
+}
+
+#btnAdicionarServico:disabled {
+  background-color: #95c9a3;
+  cursor: not-allowed;
+}
+
+/* Tabela */
+
+.tabela-container {
+  overflow-x: auto;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.1);
+  background: white;
+  padding: 15px;
+}
+
+.tabela-agendamentos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+  color: #444;
+}
+
+.tabela-agendamentos thead {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.tabela-agendamentos th,
+.tabela-agendamentos td {
+  padding: 12px 18px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.tabela-agendamentos tbody tr:hover {
+  background-color: #f1f7ff;
+}
+
+/* Botões da tabela */
+
+.tabela-agendamentos button {
+  padding: 6px 12px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.25s ease;
+  font-size: 0.9rem;
+}
+
+.btn-editar {
+  background-color: #f39c12;
+  color: white;
+}
+
+.btn-editar:hover {
+  background-color: #c87f0a;
+}
+
+.btn-excluir {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.btn-excluir:hover {
+  background-color: #b93a2a;
+}
+
+.btn-salvar {
+  background-color: #27ae60;
+  color: white;
+}
+
+.btn-salvar:hover {
+  background-color: #1e874b;
+}
+
+.btn-cancelar {
+  background-color: #7f8c8d;
+  color: white;
+}
+
+.btn-cancelar:hover {
+  background-color: #5c6a6b;
+}
+
+/* Inputs inline na tabela */
+
+.input-edit-nome,
+.input-edit-preco {
+  width: 90%;
+  padding: 6px 8px;
+  font-size: 1rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+}
+
+.input-edit-nome:focus,
+.input-edit-preco:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+
