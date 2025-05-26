@@ -23,7 +23,7 @@
 
     h1 {
       color: #333;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     .info {
@@ -45,28 +45,46 @@
     button:hover {
       background-color: #264d99;
     }
+
+    .home-button {
+      display: inline-block;
+      margin-bottom: 20px;
+      text-decoration: none;
+      background-color: #3366ff;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .home-button:hover {
+      background-color: #264d99;
+    }
   </style>
 </head>
 <body>
+
   <h1>Meu Perfil</h1>
-  <div id="perfil-container">
+  <a href="home.html" class="home-button">🏠 Home</a>
+
+  <div id="perfil-container" class="perfil-container">
+    <p><strong>Nome:</strong> <span id="nome"></span></p>
     <p><strong>Email:</strong> <span id="email"></span></p>
     <p><strong>Função:</strong> <span id="role"></span></p>
   </div>
 
   <script type="module">
-    // IMPORTAÇÃO DO SUPABASE DEVE VIR PRIMEIRO
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // CRIAÇÃO DO CLIENT SUPABASE ANTES DE QUALQUER USO
     const supabase = createClient(
       'https://kiqvzarmwooveklezzfm.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
     );
 
     async function carregarPerfil() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+      if (userError || !user) {
         alert('Você precisa estar logado.');
         window.location.href = 'login.html';
         return;
@@ -74,17 +92,18 @@
 
       document.getElementById('email').textContent = user.email;
 
-      // BUSCAR ROLE NA TABELA USUÁRIOS
       const { data, error } = await supabase
         .from('usuarios')
-        .select('role')
+        .select('nome, role')
         .eq('id', user.id)
         .single();
 
       if (error) {
-        console.error('Erro ao buscar role:', error);
+        console.error('Erro ao buscar dados do usuário:', error);
+        document.getElementById('nome').textContent = 'Desconhecido';
         document.getElementById('role').textContent = 'Desconhecida';
       } else {
+        document.getElementById('nome').textContent = data.nome || 'Não informado';
         document.getElementById('role').textContent = data.role || 'Não definida';
       }
     }

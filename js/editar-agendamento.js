@@ -1,76 +1,101 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(
+  'https://kiqvzarmwooveklezzfm.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+);
 
-// Função para pegar o id da URL (?id=...)
-function getIdFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('id');
+const urlParams = new URLSearchParams(window.location.search);
+const agendamentoId = urlParams.get('id');
+
+if (!agendamentoId) {
+  alert('ID do agendamento não fornecido.');
+  window.location.href = 'gerenciar-agendamentos.html';
 }
 
-async function carregarAgendamento(id) {
-  const { data, error } = await supabase.from('agendamentos').select('*').eq('id', id).single();
+// Carrega a lista de serviços para o select, selecionando o que já está atribuído (se existir)
+async function carregarServicos(servicoSelecionadoId) {
+  const select = document.getElementById('tipoServico');
+  select.innerHTML = '<option value="">Carregando serviços...</option>';
+
+  const { data: servicos, error } = await supabase
+    .from('servicos')
+    .select('id, nome')
+    .order('nome', { ascending: true });
 
   if (error) {
-    alert('Erro ao carregar agendamento.');
-    console.error(error);
-    return null;
-  }
-
-  return data;
-}
-
-async function salvarAgendamento(id, dados) {
-  const { error } = await supabase.from('agendamentos').update(dados).eq('id', id);
-
-  if (error) {
-    alert('Erro ao salvar agendamento.');
-    console.error(error);
-    return false;
-  }
-
-  return true;
-}
-
-window.addEventListener('DOMContentLoaded', async () => {
-  const id = getIdFromUrl();
-  if (!id) {
-    alert('ID do agendamento não informado.');
-    window.location.href = 'admin_dashboard.html';
+    console.error('Erro ao carregar serviços:', error);
+    select.innerHTML = '<option value="">Erro ao carregar</option>';
     return;
   }
 
-  const agendamento = await carregarAgendamento(id);
-  if (!agendamento) {
-    window.location.href = 'admin_dashboard.html';
-    return;
-  }
+  select.innerHTML = '<option value="">Selecione</option>';
 
-  // Preencher formulário
-  document.getElementById('nome').value = agendamento.nome || '';
-  document.getElementById('data').value = agendamento.data ? agendamento.data.split('T')[0] : '';
-  document.getElementById('servico').value = agendamento.servico || '';
-  document.getElementById('veiculo').value = agendamento.veiculo || '';
-  document.getElementById('status').value = agendamento.status || 'Pendente';
+  servicos.forEach(servico => {
+    const option = document.createElement('option');
+    option.value = servico.id;
+    option.textContent = servico.nome;
 
-  // Captura submit do form
-  document.getElementById('formEditarAgendamento').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const dadosAtualizados = {
-      nome: document.getElementById('nome').value.trim(),
-      data: document.getElementById('data').value,
-      servico: document.getElementById('servico').value.trim(),
-      veiculo: document.getElementById('veiculo').value.trim(),
-      status: document.getElementById('status').value,
-    };
-
-    const sucesso = await salvarAgendamento(id, dadosAtualizados);
-    if (sucesso) {
-      alert('Agendamento salvo com sucesso!');
-      window.location.href = 'admin_dashboard.html';
+    if (servicoSelecionadoId && servico.id.toString() === servicoSelecionadoId.toString()) {
+      option.selected = true;
     }
+
+    select.appendChild(option);
   });
+}
+
+// Carrega os dados do agendamento e preenche o formulário
+async function carregarAgendamento() {
+  const { data, error } = await supabase
+    .from('agendamentos')
+    .select('*')
+    .eq('id', agendamentoId)
+    .single();
+
+  if (error || !data) {
+    alert('Erro ao carregar agendamento ou agendamento não encontrado.');
+    console.error(error);
+    window.location.href = 'gerenciar-agendamentos.html';
+    return;
+  }
+
+  document.getElementById('nome').value = data.nome ?? '';
+  // Ajusta data para o formato YYYY-MM-DD caso venha com horário
+  document.getElementById('data').value = data.data ? data.data.split('T')[0] : '';
+
+  await carregarServicos(data.servico_id);
+}
+
+// Manipulador do envio do formulário de edição
+document.getElementById('formEditar').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const nome = document.getElementById('nome').value.trim();
+  const dataAgendamento = document.getElementById('data').value;
+  const servicoId = document.getElementById('tipoServico').value;
+
+  if (!nome || !dataAgendamento || !servicoId) {
+    alert('Por favor, preencha todos os campos.');
+    return;
+  }
+
+  const { error } = await supabase
+    .from('agendamentos')
+    .update({
+      nome,
+      data: dataAgendamento,
+      servico_id: servicoId
+    })
+    .eq('id', agendamentoId);
+
+  if (error) {
+    alert('Erro ao atualizar agendamento: ' + error.message);
+    console.error(error);
+  } else {
+    alert('Agendamento atualizado com sucesso!');
+    window.location.href = 'gerenciar-agendamentos.html';
+  }
 });
+
+// Inicializa carregando os dados do agendamento
+carregarAgendamento();

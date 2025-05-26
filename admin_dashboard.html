@@ -2,397 +2,130 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard Administrativa - Agendamentos</title>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
+  <title>Painel Administrativo</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f5f5f5;
-      color: #333;
-      max-width: 900px;
-      margin: 0 auto;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
     }
-    .container {
-      background: white;
+    header {
+      background-color: #2c3e50;
+      color: white;
       padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgb(0 0 0 / 0.1);
+      text-align: center;
     }
     h1 {
-      text-align: center;
-      color: #0077cc;
-      margin-bottom: 10px;
-    }
-    .btn {
-      cursor: pointer;
-      padding: 8px 15px;
-      margin: 10px auto 20px auto;
-      display: block;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      color: white;
-      transition: background-color 0.3s ease;
-      max-width: 200px;
-      text-align: center;
-      background-color: #0077cc;
-    }
-    .btn:hover {
-      background-color: #005fa3;
-    }
-    .agendamento-item {
-      background: #e8f0fe;
-      padding: 15px 20px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 6px rgb(0 119 204 / 0.2);
-    }
-    .agendamento-item p {
-      margin: 5px 0;
-    }
-    .btn-editar {
-      background-color: #0077cc;
-    }
-    .btn-editar:hover {
-      background-color: #005fa3;
-    }
-    .btn-excluir {
-      background-color: #cc3300;
-    }
-    .btn-excluir:hover {
-      background-color: #a32900;
-    }
-    /* Modal styles */
-    .modal {
-      display: none; 
-      position: fixed; 
-      z-index: 9999; 
-      left: 0; 
-      top: 0; 
-      width: 100%; 
-      height: 100%; 
-      overflow: auto; 
-      background-color: rgba(0,0,0,0.5); 
-    }
-    .modal-content {
-      background-color: #fff;
-      margin: 10% auto;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 400px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      position: relative;
-    }
-    .modal-content h2 {
-      margin-top: 0;
-      color: #0077cc;
-    }
-    .modal-content label {
-      display: block;
-      margin: 10px 0 5px;
-    }
-    .modal-content input, 
-    .modal-content select {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    .modal-content .btn-save {
-      background-color: #0077cc;
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-    }
-    .modal-content .btn-save:hover {
-      background-color: #005fa3;
-    }
-    .close {
-      position: absolute;
-      right: 15px;
-      top: 15px;
+      margin: 0;
       font-size: 24px;
-      font-weight: bold;
-      cursor: pointer;
-      color: #aaa;
-      transition: color 0.3s ease;
     }
-    .close:hover {
-      color: #000;
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-
-    /* Novo estilo para resumo dos agendamentos */
-    .resumo-agendamentos {
+    .botoes-navegacao {
       display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin-bottom: 25px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #0077cc;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 30px;
     }
-    .resumo-item {
-      background: #d0e7ff;
-      padding: 15px 25px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgb(0 119 204 / 0.15);
+    .botoes-navegacao button {
+      flex: 1;
       min-width: 150px;
-      text-align: center;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .botoes-navegacao button:hover {
+      background-color: #2980b9;
+    }
+    .resumo {
+      margin-top: 20px;
+    }
+    .resumo p {
+      font-size: 16px;
+      margin: 8px 0;
+    }
+    .agendamento {
+      background-color: #ecf0f1;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .acoes {
+      margin-top: 10px;
+    }
+    .acoes button {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 10px;
+      transition: background-color 0.3s ease;
+    }
+    .acoes button:hover {
+      background-color: #c0392b;
     }
   </style>
 </head>
 <body>
+
+  <header>
+    <h1>Painel Administrativo</h1>
+  </header>
+
   <div class="container">
-    <h1>Dashboard Administrativa - Agendamentos</h1>
-
-    <!-- Botão separado para gerenciar serviços -->
-    <button class="btn" onclick="window.location.href='gerenciar-servicos.html'">
-      Gerenciar Serviços
-    </button>
-
-    <!-- Resumo de agendamentos hoje e amanhã -->
-    <div class="resumo-agendamentos">
-      <div class="resumo-item" id="agendamentosHoje">Agendamentos Hoje: 0</div>
-      <div class="resumo-item" id="agendamentosAmanha">Agendamentos Amanhã: 0</div>
+    <div class="botoes-navegacao">
+      <button onclick="window.location.href='home.html'">
+        <i class="fas fa-home"></i> Home
+      </button>
+      <button onclick="window.location.href='gerenciar-usuarios.html'">
+        <i class="fas fa-users-cog"></i> Gerenciar Usuários
+      </button>
+      <button onclick="window.location.href='gerenciar-servicos.html'">
+        <i class="fas fa-concierge-bell"></i> Gerenciar Serviços
+      </button>
+      <button onclick="window.location.href='gerenciar-agendamentos.html'">
+        <i class="fas fa-calendar-alt"></i> Gerenciar Agendamentos
+      </button>
     </div>
 
-    <div id="listaAgendamentos"></div>
-  </div>
+    <div class="resumo">
+      <p id="contador-hoje">Agendamentos de hoje: 0</p>
+      <p id="contador-amanha">Agendamentos de amanhã: 0</p>
+    </div>
 
-  <!-- Modal Editar -->
-  <div id="modalEditar" class="modal">
-    <div class="modal-content">
-      <span class="close" id="fecharModal">&times;</span>
-      <h2>Editar Agendamento</h2>
-      <form id="formEditar">
-        <label for="data">Data:</label>
-        <input type="date" id="data" name="data" required />
-
-        <label for="periodo">Período:</label>
-        <select id="periodo" name="periodo" required>
-          <option value="Manhã">Manhã</option>
-          <option value="Tarde">Tarde</option>
-          <option value="Noite">Noite</option>
-        </select>
-
-        <label for="tipo_servico">Serviço:</label>
-        <input type="text" id="tipo_servico" name="tipo_servico" required />
-
-        <label for="status">Status:</label>
-        <select id="status" name="status" required>
-          <option value="Pendente">Pendente</option>
-          <option value="Confirmado">Confirmado</option>
-          <option value="Cancelado">Cancelado</option>
-          <option value="Finalizado">Finalizado</option>
-        </select>
-
-        <button type="submit" class="btn btn-editar btn-save">Salvar</button>
-      </form>
+    <div id="lista-agendamentos">
+      <!-- Lista de agendamentos será carregada aqui -->
     </div>
   </div>
 
+  <!-- Inicialização do Supabase -->
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    // Substitua pelos seus dados do Supabase
-    const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8';
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    let agendamentoEditandoId = null;
-
-    // Verifica se está logado e sessão ativa
-    async function verificarSessao() {
-      const { data: sessionData, error } = await supabase.auth.getSession();
-
-      if (error || !sessionData || !sessionData.session) {
-        alert("Usuário não autenticado.");
-        window.location.href = "index.html";
-        return;
-      }
-
-      await carregarResumoAgendamentos();
-      carregarAgendamentos();
-    }
-
-    // Função para carregar quantidade de agendamentos hoje e amanhã
-    async function carregarResumoAgendamentos() {
-      const hoje = new Date();
-      const amanha = new Date(hoje);
-      amanha.setDate(hoje.getDate() + 1);
-
-      // Formata datas para 'YYYY-MM-DD'
-      const formatarData = (data) => {
-        const y = data.getFullYear();
-        const m = String(data.getMonth() + 1).padStart(2, '0');
-        const d = String(data.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-      };
-
-      const dataHoje = formatarData(hoje);
-      const dataAmanha = formatarData(amanha);
-
-      // Busca quantidade agendamentos para hoje
-      const { count: countHoje, error: errHoje } = await supabase
-        .from('agendamentos')
-        .select('id', { count: 'exact', head: true })
-        .eq('data', dataHoje)
-        .neq('status', 'Cancelado');
-
-      // Busca quantidade agendamentos para amanhã
-      const { count: countAmanha, error: errAmanha } = await supabase
-        .from('agendamentos')
-        .select('id', { count: 'exact', head: true })
-        .eq('data', dataAmanha)
-        .neq('status', 'Cancelado');
-
-      if (errHoje || errAmanha) {
-        console.error('Erro ao buscar resumo agendamentos:', errHoje || errAmanha);
-        document.getElementById('agendamentosHoje').textContent = 'Erro ao carregar dados';
-        document.getElementById('agendamentosAmanha').textContent = 'Erro ao carregar dados';
-        return;
-      }
-
-      document.getElementById('agendamentosHoje').textContent = `Agendamentos Hoje: ${countHoje}`;
-      document.getElementById('agendamentosAmanha').textContent = `Agendamentos Amanhã: ${countAmanha}`;
-    }
-
-    // Carrega TODOS agendamentos (sem filtro)
-    async function carregarAgendamentos() {
-      const { data, error } = await supabase
-        .from('agendamentos')
-        .select('*, servico:servico_id (nome)')
-        .order('data', { ascending: true });
-
-      if (error) {
-        console.error("Erro ao buscar agendamentos:", error);
-        return;
-      }
-
-      const lista = document.getElementById("listaAgendamentos");
-      lista.innerHTML = '';
-
-      if (!data || data.length === 0) {
-        lista.innerHTML = "<p>Nenhum agendamento encontrado.</p>";
-        return;
-      }
-
-      data.forEach(agendamento => {
-        const div = document.createElement("div");
-        div.className = "agendamento-item";
-
-        div.innerHTML = `
-          <p><strong>ID:</strong> ${agendamento.id}</p>
-          <p><strong>Data:</strong> ${agendamento.data}</p>
-          <p><strong>Período:</strong> ${agendamento.periodo}</p>
-          <p><strong>Serviço:</strong> ${agendamento.servico ? agendamento.servico.nome : agendamento.tipo_servico}</p>
-          <p><strong>Status:</strong> ${agendamento.status}</p>
-          <button class="btn btn-editar" data-id="${agendamento.id}">Editar</button>
-          <button class="btn btn-excluir" data-id="${agendamento.id}">Excluir</button>
-        `;
-
-        lista.appendChild(div);
-      });
-
-      // Botões editar
-      document.querySelectorAll(".btn-editar").forEach(btn => {
-        btn.addEventListener("click", () => abrirModalEditar(btn.getAttribute("data-id")));
-      });
-
-      // Botões excluir
-      document.querySelectorAll(".btn-excluir").forEach(btn => {
-        btn.addEventListener("click", () => excluirAgendamento(btn.getAttribute("data-id")));
-      });
-    }
-
-    // Abre modal para editar agendamento
-    async function abrirModalEditar(id) {
-      agendamentoEditandoId = id;
-
-      // Busca dados do agendamento para preencher o formulário
-      const { data, error } = await supabase
-        .from('agendamentos')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error || !data) {
-        alert("Erro ao buscar agendamento.");
-        return;
-      }
-
-      // Preencher campos do formulário
-      document.getElementById("data").value = data.data;
-      document.getElementById("periodo").value = data.periodo;
-      document.getElementById("tipo_servico").value = data.tipo_servico || '';
-      document.getElementById("status").value = data.status;
-
-      document.getElementById("modalEditar").style.display = "block";
-    }
-
-    // Fecha modal
-    document.getElementById("fecharModal").addEventListener("click", () => {
-      document.getElementById("modalEditar").style.display = "none";
-    });
-
-    window.onclick = function(event) {
-      const modal = document.getElementById("modalEditar");
-      if (event.target === modal) {
-        modal.style.display = "none";
-      }
-    };
-
-    // Salvar edição do agendamento
-    document.getElementById("formEditar").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const data = document.getElementById("data").value;
-      const periodo = document.getElementById("periodo").value;
-      const tipo_servico = document.getElementById("tipo_servico").value;
-      const status = document.getElementById("status").value;
-
-      const { error } = await supabase
-        .from('agendamentos')
-        .update({ data, periodo, tipo_servico, status })
-        .eq('id', agendamentoEditandoId);
-
-      if (error) {
-        alert("Erro ao salvar agendamento.");
-        console.error(error);
-        return;
-      }
-
-      alert("Agendamento atualizado com sucesso!");
-      document.getElementById("modalEditar").style.display = "none";
-      carregarResumoAgendamentos();
-      carregarAgendamentos();
-    });
-
-    // Excluir agendamento
-    async function excluirAgendamento(id) {
-      if (!confirm("Tem certeza que deseja excluir este agendamento?")) return;
-
-      const { error } = await supabase
-        .from('agendamentos')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        alert("Erro ao excluir agendamento.");
-        console.error(error);
-        return;
-      }
-
-      alert("Agendamento excluído com sucesso!");
-      carregarResumoAgendamentos();
-      carregarAgendamentos();
-    }
-
-    // Inicializa a dashboard
-    verificarSessao();
+    const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co' // substitua pela sua URL
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'    // substitua pela sua chave pública
+    window.supabase = createClient(supabaseUrl, supabaseKey)
   </script>
+
+  <script type="module" src="js/admin_dashboard.js"></script>
 </body>
 </html>

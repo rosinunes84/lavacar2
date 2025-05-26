@@ -2,42 +2,69 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Editar Agendamento - LavaCar</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Editar Agendamento</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 480px;
+      margin: auto;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    form label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+      color: #444;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      border-radius: 4px;
+      transition: background-color 0.2s ease-in-out;
+    }
+    button:hover,
+    button:focus {
+      background-color: #0056b3;
+      outline: none;
+    }
+  </style>
+  <script type="module" src="editar-agendamento.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Editar Agendamento</h1>
-    <button onclick="window.location.href='admin_dashboard.html'" class="btn-voltar">Voltar</button>
-  </header>
+  <h1>Editar Agendamento</h1>
+  <form id="formEditar" aria-label="Formulário para editar agendamento">
+    <label for="nome">Nome:</label>
+    <input type="text" id="nome" name="nome" required autocomplete="name" />
 
-  <main>
-    <form id="formEditarAgendamento">
-      <label for="nome">Cliente:</label>
-      <input type="text" id="nome" name="nome" required />
+    <label for="data">Data:</label>
+    <input type="date" id="data" name="data" required />
 
-      <label for="data">Data:</label>
-      <input type="date" id="data" name="data" required />
+    <label for="tipoServico">Serviço:</label>
+    <select id="tipoServico" name="tipoServico" required>
+      <option value="">Carregando...</option>
+    </select>
 
-      <label for="servico">Serviço:</label>
-      <input type="text" id="servico" name="servico" required />
-
-      <label for="veiculo">Veículo:</label>
-      <input type="text" id="veiculo" name="veiculo" />
-
-      <label for="status">Status:</label>
-      <select id="status" name="status">
-        <option value="Pendente">Pendente</option>
-        <option value="Confirmado">Confirmado</option>
-        <option value="Concluído">Concluído</option>
-        <option value="Cancelado">Cancelado</option>
-      </select>
-
-      <button type="submit">Salvar Alterações</button>
-    </form>
-  </main>
-
-  <script type="module" src="js/editar-agendamento.js"></script>
+    <button type="submit">Salvar</button>
+  </form>
 </body>
 </html>

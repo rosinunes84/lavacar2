@@ -154,7 +154,10 @@
 
       data.forEach(agendamento => {
         const nomeServico = agendamento.servico ? agendamento.servico.nome : 'Serviço não informado';
-        const dataFormatada = new Date(agendamento.data).toLocaleDateString('pt-BR');
+
+        // Corrigido: garantir a data no horário local para evitar erro de fuso
+        const dataObj = new Date(agendamento.data + 'T00:00:00');
+        const dataFormatada = dataObj.toLocaleDateString('pt-BR');
 
         const item = document.createElement("div");
         item.className = "agendamento-item";

@@ -1,5 +1,3 @@
-// perfil.js - usando cliente oficial Supabase
-
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const SUPABASE_URL = 'https://kiqvzarmwooveklezzfm.supabase.co';
@@ -7,21 +5,43 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-async function buscarNomeUsuario(usuarioId) {
+export async function carregarPerfil() {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError) {
+    console.error('Erro ao obter usuário autenticado:', userError);
+  }
+
+  if (!user) {
+    alert('Você precisa estar logado.');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  document.getElementById('email').textContent = user.email;
+
   const { data, error } = await supabase
     .from('usuarios')
-    .select('nome')
-    .eq('id', usuarioId)
+    .select('nome, role')
+    .eq('id', user.id)
     .single();
 
   if (error) {
-    console.error('Erro ao buscar usuário:', error);
-    return null;
+    console.error('Erro ao buscar dados do usuário:', error);
+    document.getElementById('nome').textContent = 'Erro ao carregar nome';
+    document.getElementById('role').textContent = 'Erro ao carregar função';
+    return;
   }
 
-  console.log('Nome do usuário:', data.nome);
-  return data.nome;
-}
+  console.log('Dados do usuário da tabela "usuarios":', data);
 
-const usuarioId = 'ec0bbefa-18b5-4d22-94fc-f9ddc36da92b';
-buscarNomeUsuario(usuarioId);
+  // Se nome estiver vazio ou null, tenta usar user.user_metadata ou outro dado
+  let nome = data.nome;
+  if (!nome || nome.trim() === '') {
+    // Tenta pegar do user_metadata (caso exista)
+    nome = user.user_metadata?.full_name || user.user_metadata?.nome || 'Nome não disponível';
+  }
+
+  document.getElementById('nome').textContent = nome;
+  document.getElementById('role').textContent = data.role || 'Função não definida';
+}

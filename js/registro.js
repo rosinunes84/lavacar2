@@ -5,30 +5,39 @@ document.getElementById('btn-registro').addEventListener('click', async () => {
   const senha = document.getElementById('senha').value.trim();
   const nome = document.getElementById('nome').value.trim();
 
-  const { data, error } = await supabase.auth.signUp({ email, password: senha });
+  if (!email || !senha || !nome) {
+    alert('Por favor, preencha todos os campos.');
+    return;
+  }
+
+  // Cadastra usuário no Auth
+  const { data, error } = await supabase.auth.signUp({
+    email: email,
+    password: senha
+  });
 
   if (error) {
-    alert('Erro ao registrar: ' + error.message);
+    alert('Erro no cadastro: ' + error.message);
     return;
   }
 
-  const userId = data.user?.id;
+  if (data.user) {
+    const user = data.user;
 
-  if (!userId) {
-    alert("Erro: ID do usuário não encontrado.");
-    return;
+    // Insere dados na tabela usuarios
+    const { error: insertError } = await supabase
+      .from('usuarios')
+      .insert([
+        { id: user.id, nome: nome, role: 'authenticated' } // ajuste role se não existir na tabela
+      ]);
+
+    if (insertError) {
+      console.error('Erro ao salvar nome:', insertError);
+      alert('Erro ao salvar nome: ' + insertError.message);
+      return;
+    }
+
+    alert('Registro realizado! Verifique seu e-mail.');
+    window.location.href = 'login.html';
   }
-
-  // Inserir na tabela "usuarios"
-  const { error: insertError } = await supabase
-    .from('usuarios')
-    .insert([{ id: userId, nome }]);
-
-  if (insertError) {
-    alert('Erro ao salvar nome: ' + insertError.message);
-    return;
-  }
-
-  alert('Registro realizado! Verifique seu e-mail.');
-  window.location.href = 'login.html';
 });

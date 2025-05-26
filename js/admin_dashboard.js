@@ -1,101 +1,59 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { supabase } from './supabase-client.js';
 
-const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'; // Troque pela sua key real
-const supabase = createClient(supabaseUrl, supabaseKey);
+let usuarioAtual = null;
+let isAdmin = false;
 
 const listaAgendamentos = document.getElementById('lista-agendamentos');
 const contadorHoje = document.getElementById('contador-hoje');
 const contadorAmanha = document.getElementById('contador-amanha');
 
-let usuarioAtual = null;
-let isAdmin = false;
-
-// Busca nome do usuário pelo ID (com .limit(1) para evitar erro 406)
-async function getNomeUsuario(usuarioId) {
-  try {
-    const { data, error } = await supabase
-      .from('usuarios')
-      .select('nome')
-      .eq('id', usuarioId)
-      .limit(1);
-
-    if (error) {
-      console.error('Erro ao buscar usuário:', error);
-      return 'N/A';
-    }
-
-    if (data && data.length > 0) {
-      return data[0].nome;
-    } else {
-      return 'N/A';
-    }
-  } catch (err) {
-    console.error('Erro inesperado ao buscar usuário:', err);
-    return 'N/A';
-  }
+// Função para formatar a data como "dd/mm/aaaa"
+function formatarData(dataISO) {
+  const [ano, mes, dia] = dataISO.split('T')[0].split('-');
+  return `${dia}/${mes}/${ano}`;
 }
 
-// Função para carregar dados do usuário logado e definir se é admin
 async function carregarUsuarioAtual() {
-  const { data: user, error } = await supabase.auth.getUser();
-  if (error || !user) {
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data?.user) {
     console.error('Usuário não autenticado:', error);
     return;
   }
-  usuarioAtual = user.user;
+  usuarioAtual = data.user;
 
-  // Pega o perfil do usuário para verificar se é admin (supondo que exista campo 'role' na tabela 'usuarios')
-  const { data, error: errorPerfil } = await supabase
+  const { data: perfil, error: errorPerfil } = await supabase
     .from('usuarios')
     .select('role')
     .eq('id', usuarioAtual.id)
-    .limit(1);
+    .single();
 
-  if (errorPerfil || !data || data.length === 0) {
+  if (errorPerfil || !perfil) {
     console.error('Erro ao buscar perfil do usuário:', errorPerfil);
     return;
   }
 
-  isAdmin = data[0].role === 'admin';
-}
-
-// Função para excluir agendamento pelo id
-async function excluirAgendamento(id) {
-  if (!confirm('Tem certeza que deseja excluir este agendamento?')) return;
-
-  const { error } = await supabase
-    .from('agendamentos')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    alert('Erro ao excluir agendamento: ' + error.message);
-  } else {
-    alert('Agendamento excluído com sucesso!');
-    carregarAgendamentos();
-  }
-}
-
-// Função para editar agendamento (redirecionar para página de edição com id na query string)
-function editarAgendamento(id) {
-  window.location.href = `editar-agendamento.html?id=${id}`;
+  isAdmin = perfil.role === 'admin';
 }
 
 async function carregarAgendamentos() {
+  if (!listaAgendamentos || !contadorHoje || !contadorAmanha) {
+    console.error('Elementos HTML necessários não encontrados');
+    return;
+  }
+
   try {
-    // Se for admin pega todos, senão só os do usuário logado
+    listaAgendamentos.innerHTML = '<p>Carregando agendamentos...</p>';
+
     let query = supabase
       .from('agendamentos')
       .select('*')
-      .order('data', { ascending: true }); // ordem crescente para facilitar depois
+      .order('data', { ascending: true });
 
     if (!isAdmin && usuarioAtual) {
       query = query.eq('usuario_id', usuarioAtual.id);
     }
 
     const { data, error } = await query;
-
     if (error) throw error;
 
     listaAgendamentos.innerHTML = '';
@@ -105,16 +63,25 @@ async function carregarAgendamentos() {
     let totalHoje = 0;
     let totalAmanha = 0;
 
-    // separa os agendamentos do dia atual e os demais
+    const usuarioIds = [...new Set(data.map(a => a.usuario_id))];
+    const { data: usuarios } = await supabase
+      .from('usuarios')
+      .select('id, nome')
+      .in('id', usuarioIds);
+
+    const mapaUsuarios = {};
+    if (usuarios) {
+      usuarios.forEach(u => mapaUsuarios[u.id] = u.nome);
+    }
+
     const agendamentosHoje = data.filter(a => a.data === hoje);
     const agendamentosOutros = data.filter(a => a.data !== hoje);
-
-    // concatena: primeiro os de hoje, depois os demais
     const agendamentosOrdenados = [...agendamentosHoje, ...agendamentosOutros];
 
     for (const agendamento of agendamentosOrdenados) {
       const dataAgendamento = agendamento.data;
-      const nomeUsuario = await getNomeUsuario(agendamento.usuario_id);
+      const nomeUsuario = mapaUsuarios[agendamento.usuario_id] || 'N/A';
+      const dataFormatada = formatarData(dataAgendamento);
 
       if (dataAgendamento === hoje) totalHoje++;
       if (dataAgendamento === amanha) totalAmanha++;
@@ -122,16 +89,18 @@ async function carregarAgendamentos() {
       const div = document.createElement('div');
       div.className = 'agendamento';
       div.innerHTML = `
-        <strong>Serviço:</strong> ${agendamento.tipo_servico || 'N/A'}<br/>
+      <strong>Usuário:</strong> ${nomeUsuario}<br/>  
+      <strong>Data:</strong> ${dataFormatada}<br/>
+      <strong>Período:</strong> ${agendamento.periodo || 'N/A'}<br/>
+      <strong>Serviço:</strong> ${agendamento.tipo_servico || 'N/A'}<br/>
         <strong>Veículo:</strong> ${agendamento.veiculo || 'N/A'}<br/>
-        <strong>Horário:</strong> ${agendamento.periodo || 'N/A'}<br/>
-        <strong>Data:</strong> ${agendamento.data}<br/>
-        <strong>Usuário:</strong> ${nomeUsuario}<br/>
+        
+        
+        
         <div class="acoes">
           <button class="btn-editar" data-id="${agendamento.id}">Editar</button>
           <button class="btn-excluir" data-id="${agendamento.id}">Excluir</button>
         </div>
-        <hr/>
       `;
       listaAgendamentos.appendChild(div);
     }
@@ -139,26 +108,38 @@ async function carregarAgendamentos() {
     contadorHoje.textContent = `Agendamentos de hoje: ${totalHoje}`;
     contadorAmanha.textContent = `Agendamentos de amanhã: ${totalAmanha}`;
 
-    // Adiciona eventos aos botões de editar e excluir
-    document.querySelectorAll('.btn-excluir').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.target.getAttribute('data-id');
-        excluirAgendamento(id);
-      });
-    });
-
-    document.querySelectorAll('.btn-editar').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.target.getAttribute('data-id');
-        editarAgendamento(id);
-      });
-    });
-
   } catch (err) {
     console.error('Erro ao carregar agendamentos:', err);
     listaAgendamentos.innerHTML = '<p>Erro ao carregar agendamentos.</p>';
   }
 }
+
+async function excluirAgendamento(id) {
+  if (!confirm('Tem certeza que deseja excluir este agendamento?')) return;
+  const { error } = await supabase.from('agendamentos').delete().eq('id', id);
+  if (error) {
+    alert('Erro ao excluir agendamento.');
+    console.error(error);
+  } else {
+    alert('Agendamento excluído com sucesso!');
+    carregarAgendamentos();
+  }
+}
+
+function editarAgendamento(id) {
+  window.location.href = `editar-agendamento.html?id=${id}`;
+}
+
+listaAgendamentos.addEventListener('click', (e) => {
+  const target = e.target;
+  if (target.classList.contains('btn-excluir')) {
+    const id = target.getAttribute('data-id');
+    excluirAgendamento(id);
+  } else if (target.classList.contains('btn-editar')) {
+    const id = target.getAttribute('data-id');
+    editarAgendamento(id);
+  }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   await carregarUsuarioAtual();

@@ -16,6 +16,26 @@
       color: #333;
     }
 
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .nav-buttons a {
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .nav-buttons a:hover {
+      background-color: #2980b9;
+    }
+
     .usuario-card {
       background-color: #fff;
       padding: 15px;
@@ -103,6 +123,11 @@
 <body>
   <h1>Gerenciar Usuários</h1>
 
+  <div class="nav-buttons">
+    <a href="admin_dashboard.html">Voltar</a>
+    <a href="home.html">Home</a>
+  </div>
+
   <div id="lista-usuarios">
     <p>Carregando usuários...</p>
   </div>
@@ -131,6 +156,6 @@
   </div>
 
   <!-- JS externo -->
-  <script type="module" src=".js/gerenciar_usuarios.js"></script>
+  <script type="module" src="js/gerenciar_usuarios.js"></script>
 </body>
 </html>
