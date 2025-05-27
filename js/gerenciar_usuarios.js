@@ -8,17 +8,21 @@ const listaUsuarios = document.getElementById('lista-usuarios')
 
 // Carregar lista de usuários
 async function carregarUsuarios() {
+  console.log('Carregando usuários...')
   const { data, error } = await supabase
     .from('usuarios')
     .select('*')
     .order('nome', { ascending: true })
 
+  console.log('Dados recebidos:', data)  // <<< LOG AQUI
+
   if (error) {
+    console.error('Erro ao carregar usuários:', error)
     listaUsuarios.innerHTML = `<p>Erro: ${error.message}</p>`
     return
   }
 
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     listaUsuarios.innerHTML = `<p>Nenhum usuário encontrado.</p>`
     return
   }
@@ -27,23 +31,35 @@ async function carregarUsuarios() {
   data.forEach(usuario => {
     const card = document.createElement('div')
     card.className = 'usuario-card'
+
     card.innerHTML = `
-      <p><strong>Nome:</strong> ${usuario.nome}</p>
-      <p><strong>Email:</strong> ${usuario.email}</p>
+      <p><strong>Nome:</strong> ${usuario.nome || 'N/A'}</p>
+      <p><strong>Email:</strong> ${usuario.email || 'N/A'}</p>
       <p><strong>Telefone:</strong> ${usuario.telefone || 'N/A'}</p>
       <p><strong>Admin:</strong> ${usuario.is_admin ? 'Sim' : 'Não'}</p>
-      <button class="btn-excluir" onclick="excluirUsuario('${usuario.id}')">Excluir</button>
-      <button class="btn-editar" onclick='abrirFormulario("${usuario.id}", "${usuario.nome}", "${usuario.telefone || ''}", ${usuario.is_admin})'>Editar</button>
+      <button class="btn-excluir">Excluir</button>
+      <button class="btn-editar">Editar</button>
     `
+
+    const btnExcluir = card.querySelector('.btn-excluir')
+    btnExcluir.addEventListener('click', () => excluirUsuario(usuario.id))
+
+    const btnEditar = card.querySelector('.btn-editar')
+    btnEditar.addEventListener('click', () => {
+      abrirFormulario(usuario.id, usuario.nome || '', usuario.telefone || '', usuario.is_admin)
+    })
+
     listaUsuarios.appendChild(card)
   })
 }
+
 
 // Excluir usuário
 window.excluirUsuario = async function (id) {
   const confirmar = confirm('Deseja realmente excluir este usuário?')
   if (!confirmar) return
 
+  console.log('Excluindo usuário com id:', id)
   const { error } = await supabase
     .from('usuarios')
     .delete()
@@ -59,12 +75,13 @@ window.excluirUsuario = async function (id) {
 
 // Abrir formulário de edição
 window.abrirFormulario = function (id, nome, telefone, is_admin) {
+  console.log('Abrindo formulário para:', { id, nome, telefone, is_admin })
   const modal = document.getElementById('modal-edicao')
   document.getElementById('edit-id').value = id
   document.getElementById('edit-nome').value = nome
   document.getElementById('edit-telefone').value = telefone
   document.getElementById('edit-admin').checked = is_admin
-  modal.style.display = 'block'
+  modal.style.display = 'flex'
 }
 
 // Fechar modal
@@ -78,6 +95,13 @@ window.salvarAlteracoes = async function () {
   const nome = document.getElementById('edit-nome').value
   const telefone = document.getElementById('edit-telefone').value
   const is_admin = document.getElementById('edit-admin').checked
+
+  console.log('Salvando alterações:', { id, nome, telefone, is_admin })
+
+  if (!id) {
+    alert('ID do usuário não encontrado.')
+    return
+  }
 
   const { error } = await supabase
     .from('usuarios')

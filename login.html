@@ -95,7 +95,8 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('email').value;
+
+      const email = document.getElementById('email').value.trim();
       const senha = document.getElementById('senha').value;
 
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -105,6 +106,34 @@
 
       if (error) {
         alert('Erro ao fazer login: ' + error.message);
+        return;
+      }
+
+      const user = data.user;
+
+      if (!user) {
+        alert('Usuário não encontrado.');
+        return;
+      }
+
+      console.log('Usuário logado:', user.id);
+
+      // Buscar papel do usuário na tabela 'usuarios'
+      const { data: perfil, error: perfilError } = await supabase
+        .from('usuarios')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (perfilError) {
+        alert('Erro ao buscar perfil: ' + perfilError.message);
+        await supabase.auth.signOut();
+        return;
+      }
+
+      if (perfil && perfil.role === 'admin') {
+        alert('Login de administrador realizado com sucesso!');
+        window.location.href = 'admin_dashboard.html';
       } else {
         alert('Login realizado com sucesso!');
         window.location.href = 'home.html';

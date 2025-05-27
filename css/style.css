@@ -739,4 +739,28 @@ table.agendamento-table {
   margin: 0;
   padding: 0;
 }
+#loader {
+  display: none;
+  text-align: center;
+  margin: 20px 0;
+  font-weight: bold;
+}
+
+.agendamento {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.acoes {
+  margin-top: 10px;
+}
+
+.btn-editar, .btn-excluir {
+  margin-right: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
 

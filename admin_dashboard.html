@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <title>Painel Administrativo</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -50,6 +53,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      type: button;
     }
     .botoes-navegacao button:hover {
       background-color: #2980b9;
@@ -71,17 +75,35 @@
       margin-top: 10px;
     }
     .acoes button {
-      background-color: #e74c3c;
-      color: white;
       border: none;
       padding: 8px 12px;
       border-radius: 6px;
       cursor: pointer;
       margin-right: 10px;
       transition: background-color 0.3s ease;
+      font-size: 14px;
+      type: button;
     }
-    .acoes button:hover {
+    .btn-editar {
+      background-color: #27ae60;
+      color: white;
+    }
+    .btn-editar:hover {
+      background-color: #1e8449;
+    }
+    .btn-excluir {
+      background-color: #e74c3c;
+      color: white;
+    }
+    .btn-excluir:hover {
       background-color: #c0392b;
+    }
+    #loader {
+      display: none;
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: bold;
+      color: #555;
     }
   </style>
 </head>
@@ -93,16 +115,16 @@
 
   <div class="container">
     <div class="botoes-navegacao">
-      <button onclick="window.location.href='home.html'">
+      <button type="button" onclick="window.location.href='home.html'">
         <i class="fas fa-home"></i> Home
       </button>
-      <button onclick="window.location.href='gerenciar-usuarios.html'">
+      <button type="button" onclick="window.location.href='gerenciar-usuarios.html'">
         <i class="fas fa-users-cog"></i> Gerenciar Usuários
       </button>
-      <button onclick="window.location.href='gerenciar-servicos.html'">
+      <button type="button" onclick="window.location.href='gerenciar-servicos.html'">
         <i class="fas fa-concierge-bell"></i> Gerenciar Serviços
       </button>
-      <button onclick="window.location.href='gerenciar-agendamentos.html'">
+      <button type="button" onclick="window.location.href='gerenciar-agendamentos.html'">
         <i class="fas fa-calendar-alt"></i> Gerenciar Agendamentos
       </button>
     </div>
@@ -111,6 +133,8 @@
       <p id="contador-hoje">Agendamentos de hoje: 0</p>
       <p id="contador-amanha">Agendamentos de amanhã: 0</p>
     </div>
+
+    <div id="loader">Carregando...</div>
 
     <div id="lista-agendamentos">
       <!-- Lista de agendamentos será carregada aqui -->
