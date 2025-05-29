@@ -60,6 +60,22 @@
     button:hover {
       background-color: #0f67d1;
     }
+    /* Estilo da notificação */
+    #notificacao {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-weight: bold;
+      display: none; /* Escondida inicialmente */
+    }
+    #notificacao.sucesso {
+      background-color: #28a745;
+      color: white;
+    }
+    #notificacao.erro {
+      background-color: #dc3545;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -89,6 +105,9 @@
     <label for="veiculo">Veículo (opcional)</label>
     <input type="text" id="veiculo" name="veiculo" placeholder="Ex: Carro, Moto..." />
 
+    <!-- Div para exibir notificações acima do botão -->
+    <div id="notificacao"></div>
+
     <button type="submit">Agendar</button>
   </form>
 
@@ -98,6 +117,13 @@
     const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8';
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    function mostrarNotificacao(mensagem, tipo) {
+      const div = document.getElementById('notificacao');
+      div.textContent = mensagem;
+      div.className = tipo; // 'sucesso' ou 'erro'
+      div.style.display = 'block';
+    }
 
     async function verificarSessao() {
       const { data: { user }, error } = await supabase.auth.getUser();
@@ -158,7 +184,7 @@
       };
 
       if (!dados.data || !dados.periodo || !dados.servico_id) {
-        alert('Por favor, preencha todos os campos obrigatórios.');
+        mostrarNotificacao('Por favor, preencha todos os campos obrigatórios.', 'erro');
         return;
       }
 
@@ -167,11 +193,14 @@
         .insert([dados]);
 
       if (error) {
-        alert('Erro ao agendar: ' + error.message);
+        mostrarNotificacao('Erro ao agendar: ' + error.message, 'erro');
         console.error(error);
       } else {
-        alert('Agendamento realizado com sucesso!');
-        window.location.href = 'meus-agendamentos.html';
+        mostrarNotificacao('Agendamento realizado com sucesso!', 'sucesso');
+        // Espera 2 segundos e redireciona para meus-agendamentos.html
+        setTimeout(() => {
+          window.location.href = 'meus-agendamentos.html';
+        }, 2000);
       }
     });
 

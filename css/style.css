@@ -763,4 +763,46 @@ table.agendamento-table {
   padding: 5px 10px;
   cursor: pointer;
 }
+.usuario-card {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: background 0.3s, transform 0.2s;
+}
+
+.usuario-card:hover {
+  background: #f0f0f0;
+  transform: scale(1.02);
+}
+
+.btn-excluir {
+  background-color: #ff4d4f;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-excluir:hover {
+  background-color: #d9363e;
+}
+
+.loading {
+  font-style: italic;
+  color: #555;
+}
+
+.error {
+  color: red;
+}
+
+.empty {
+  color: #888;
+}
 

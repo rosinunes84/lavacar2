@@ -59,22 +59,22 @@ async function carregarAgendamento() {
     return;
   }
 
-  document.getElementById('nome').value = data.nome ?? '';
-  // Ajusta data para o formato YYYY-MM-DD caso venha com horário
   document.getElementById('data').value = data.data ? data.data.split('T')[0] : '';
-
-  await carregarServicos(data.servico_id);
+  document.getElementById('periodo').value = data.periodo ?? '';
+  document.getElementById('tipoServico').value = data.servico_id ?? '';
+  document.getElementById('veiculo').value = data.veiculo ?? '';
 }
 
 // Manipulador do envio do formulário de edição
 document.getElementById('formEditar').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const nome = document.getElementById('nome').value.trim();
   const dataAgendamento = document.getElementById('data').value;
+  const periodo = document.getElementById('periodo').value;
   const servicoId = document.getElementById('tipoServico').value;
+  const veiculo = document.getElementById('veiculo').value.trim();
 
-  if (!nome || !dataAgendamento || !servicoId) {
+  if (!dataAgendamento || !periodo || !servicoId || !veiculo) {
     alert('Por favor, preencha todos os campos.');
     return;
   }
@@ -82,9 +82,10 @@ document.getElementById('formEditar').addEventListener('submit', async (e) => {
   const { error } = await supabase
     .from('agendamentos')
     .update({
-      nome,
       data: dataAgendamento,
-      servico_id: servicoId
+      periodo: periodo,
+      servico_id: servicoId,
+      veiculo: veiculo
     })
     .eq('id', agendamentoId);
 
@@ -97,5 +98,6 @@ document.getElementById('formEditar').addEventListener('submit', async (e) => {
   }
 });
 
-// Inicializa carregando os dados do agendamento
+// Inicializa carregando os dados do agendamento e serviços
 carregarAgendamento();
+carregarServicos();

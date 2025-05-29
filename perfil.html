@@ -68,9 +68,11 @@
   <a href="home.html" class="home-button">🏠 Home</a>
 
   <div id="perfil-container" class="perfil-container">
-    <p><strong>Nome:</strong> <span id="nome"></span></p>
-    <p><strong>Email:</strong> <span id="email"></span></p>
-    <p><strong>Função:</strong> <span id="role"></span></p>
+    <p><strong>Nome:</strong> <span id="nome">Carregando...</span></p>
+    <p><strong>Email:</strong> <span id="email">Carregando...</span></p>
+    <p><strong>Função:</strong> <span id="role">Carregando...</span></p>
+
+    <button id="logout">Sair</button>
   </div>
 
   <script type="module">
@@ -82,17 +84,18 @@
     );
 
     async function carregarPerfil() {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const { data, error: userError } = await supabase.auth.getUser();
 
-      if (userError || !user) {
+      if (userError || !data?.user) {
         alert('Você precisa estar logado.');
         window.location.href = 'login.html';
         return;
       }
 
+      const user = data.user;
       document.getElementById('email').textContent = user.email;
 
-      const { data, error } = await supabase
+      const { data: perfil, error } = await supabase
         .from('usuarios')
         .select('nome, role')
         .eq('id', user.id)
@@ -103,12 +106,21 @@
         document.getElementById('nome').textContent = 'Desconhecido';
         document.getElementById('role').textContent = 'Desconhecida';
       } else {
-        document.getElementById('nome').textContent = data.nome || 'Não informado';
-        document.getElementById('role').textContent = data.role || 'Não definida';
+        document.getElementById('nome').textContent = perfil.nome || 'Não informado';
+        document.getElementById('role').textContent = perfil.role || 'Não definida';
       }
     }
 
     carregarPerfil();
+
+    document.getElementById('logout').addEventListener('click', async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        alert('Erro ao sair: ' + error.message);
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
   </script>
 </body>
 </html>

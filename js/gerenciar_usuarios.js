@@ -6,24 +6,28 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
 const listaUsuarios = document.getElementById('lista-usuarios')
 
+// Função para criar spinner de carregamento
+function mostrarLoading() {
+  listaUsuarios.innerHTML = '<p class="loading">Carregando usuários...</p>'
+}
+
 // Carregar lista de usuários
 async function carregarUsuarios() {
-  console.log('Carregando usuários...')
+  mostrarLoading()
+
   const { data, error } = await supabase
     .from('usuarios')
     .select('*')
     .order('nome', { ascending: true })
 
-  console.log('Dados recebidos:', data)  // <<< LOG AQUI
-
   if (error) {
     console.error('Erro ao carregar usuários:', error)
-    listaUsuarios.innerHTML = `<p>Erro: ${error.message}</p>`
+    listaUsuarios.innerHTML = `<p class="error">Erro: ${error.message}</p>`
     return
   }
 
   if (!data || data.length === 0) {
-    listaUsuarios.innerHTML = `<p>Nenhum usuário encontrado.</p>`
+    listaUsuarios.innerHTML = `<p class="empty">Nenhum usuário encontrado.</p>`
     return
   }
 
@@ -33,87 +37,41 @@ async function carregarUsuarios() {
     card.className = 'usuario-card'
 
     card.innerHTML = `
-      <p><strong>Nome:</strong> ${usuario.nome || 'N/A'}</p>
-      <p><strong>Email:</strong> ${usuario.email || 'N/A'}</p>
-      <p><strong>Telefone:</strong> ${usuario.telefone || 'N/A'}</p>
-      <p><strong>Admin:</strong> ${usuario.is_admin ? 'Sim' : 'Não'}</p>
-      <button class="btn-excluir">Excluir</button>
-      <button class="btn-editar">Editar</button>
+      <p><strong>👤 Nome:</strong> ${usuario.nome || 'N/A'}</p>
+      <p><strong>📧 Email:</strong> ${usuario.email || 'N/A'}</p>
+      <p><strong>📞 Telefone:</strong> ${usuario.telefone || 'N/A'}</p>
+      <p><strong>🔑 Admin:</strong> ${usuario.is_admin ? '✅ Sim' : '❌ Não'}</p>
+      <button class="btn-excluir">🗑️ Excluir</button>
     `
 
     const btnExcluir = card.querySelector('.btn-excluir')
-    btnExcluir.addEventListener('click', () => excluirUsuario(usuario.id))
-
-    const btnEditar = card.querySelector('.btn-editar')
-    btnEditar.addEventListener('click', () => {
-      abrirFormulario(usuario.id, usuario.nome || '', usuario.telefone || '', usuario.is_admin)
-    })
+    btnExcluir.addEventListener('click', () => excluirUsuario(usuario.id, card))
 
     listaUsuarios.appendChild(card)
   })
 }
 
-
 // Excluir usuário
-window.excluirUsuario = async function (id) {
-  const confirmar = confirm('Deseja realmente excluir este usuário?')
+window.excluirUsuario = async function (id, card) {
+  const confirmar = confirm('❓ Deseja realmente excluir este usuário?')
   if (!confirmar) return
 
-  console.log('Excluindo usuário com id:', id)
+  card.classList.add('loading')
+
   const { error } = await supabase
     .from('usuarios')
     .delete()
     .eq('id', id)
 
   if (error) {
-    alert('Erro ao excluir usuário: ' + error.message)
+    alert('❌ Erro ao excluir usuário: ' + error.message)
+    card.classList.remove('loading')
   } else {
-    alert('Usuário excluído com sucesso!')
-    carregarUsuarios()
-  }
-}
-
-// Abrir formulário de edição
-window.abrirFormulario = function (id, nome, telefone, is_admin) {
-  console.log('Abrindo formulário para:', { id, nome, telefone, is_admin })
-  const modal = document.getElementById('modal-edicao')
-  document.getElementById('edit-id').value = id
-  document.getElementById('edit-nome').value = nome
-  document.getElementById('edit-telefone').value = telefone
-  document.getElementById('edit-admin').checked = is_admin
-  modal.style.display = 'flex'
-}
-
-// Fechar modal
-window.fecharModal = function () {
-  document.getElementById('modal-edicao').style.display = 'none'
-}
-
-// Salvar alterações
-window.salvarAlteracoes = async function () {
-  const id = document.getElementById('edit-id').value
-  const nome = document.getElementById('edit-nome').value
-  const telefone = document.getElementById('edit-telefone').value
-  const is_admin = document.getElementById('edit-admin').checked
-
-  console.log('Salvando alterações:', { id, nome, telefone, is_admin })
-
-  if (!id) {
-    alert('ID do usuário não encontrado.')
-    return
-  }
-
-  const { error } = await supabase
-    .from('usuarios')
-    .update({ nome, telefone, is_admin })
-    .eq('id', id)
-
-  if (error) {
-    alert('Erro ao atualizar usuário: ' + error.message)
-  } else {
-    alert('Usuário atualizado com sucesso!')
-    fecharModal()
-    carregarUsuarios()
+    alert('✅ Usuário excluído com sucesso!')
+    card.remove()
+    if (listaUsuarios.children.length === 0) {
+      listaUsuarios.innerHTML = `<p class="empty">Nenhum usuário encontrado.</p>`
+    }
   }
 }
 

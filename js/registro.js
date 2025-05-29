@@ -1,9 +1,9 @@
 console.log('registro.js carregado');
+
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'; // mantém a sua key
-
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const form = document.getElementById('signup-form');
@@ -16,27 +16,35 @@ form.addEventListener('submit', async (e) => {
   const email = form.email.value.trim();
   const senha = form.senha.value.trim();
 
+  if (!nome) {
+    mensagem.textContent = 'Por favor, preencha o nome.';
+    return;
+  }
+
+
   mensagem.textContent = 'Cadastrando...';
 
-  // 1) Cadastra usuário na autenticação do Supabase com email e senha do formulário
-  const { user, error: signUpError } = await supabase.auth.signUp({
+
+  const { data, error } = await supabase.auth.signUp({
     email: email,
     password: senha,
   });
 
-  if (signUpError) {
-    mensagem.textContent = `Erro ao cadastrar: ${signUpError.message}`;
+  if (error) {
+    mensagem.textContent = `Erro ao cadastrar: ${error.message}`;
     return;
   }
 
-  if (user) {
-    // 2) Insere dados do usuário na tabela 'usuarios'
-    const { data, error } = await supabase
-      .from('usuarios')
-      .insert([{ id: user.id, nome: nome, email: user.email, is_admin: false, role: 'user' }]);
+  const user = data.user;
 
-    if (error) {
-      mensagem.textContent = `Erro ao salvar dados do usuário: ${error.message}`;
+  if (user) {
+    // Usando upsert para evitar erro caso usuário já exista
+    const { error: dbError } = await supabase
+      .from('usuarios')
+      .upsert([{ id: user.id, nome, email, role: 'cliente' }]);
+
+    if (dbError) {
+      mensagem.textContent = 'Erro ao salvar no banco: ' + dbError.message;
       return;
     }
   }

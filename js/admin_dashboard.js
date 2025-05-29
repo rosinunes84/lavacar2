@@ -6,15 +6,13 @@ let isAdmin = false;
 const listaAgendamentos = document.getElementById('lista-agendamentos');
 const contadorHoje = document.getElementById('contador-hoje');
 const contadorAmanha = document.getElementById('contador-amanha');
-const loader = document.getElementById('loader'); // <div id="loader" style="display:none;">Carregando...</div>
+const loader = document.getElementById('loader');
 
-// Formata data para mostrar só data (dd/mm/aaaa)
 function formatarData(dataISO) {
   const data = new Date(dataISO);
-  return data.toLocaleDateString('pt-BR');
+  return data.toLocaleDateString('pt-BR');  // dd/mm/aaaa
 }
 
-// Retorna string no formato YYYY-MM-DD da data local
 function dataLocalISO(dateObj) {
   const ano = dateObj.getFullYear();
   const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -27,18 +25,25 @@ function mostrarErro(msg) {
 }
 
 async function carregarUsuarioAtual() {
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data?.user) {
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !authData?.user) {
     mostrarErro('Usuário não autenticado.');
     window.location.href = 'index.html';
     return;
   }
-  usuarioAtual = data.user;
 
+  usuarioAtual = authData.user;
+  console.log('Usuário logado:', usuarioAtual.id);
+
+  // Limpa espaços (caso existam) para evitar erro no filtro
+  const userId = usuarioAtual.id.trim();
+
+  // Busca role na tabela 'usuarios'
   const { data: perfil, error: errorPerfil } = await supabase
     .from('usuarios')
     .select('role')
-    .eq('id', usuarioAtual.id)
+    .eq('id', userId)
     .single();
 
   if (errorPerfil || !perfil) {
@@ -68,7 +73,7 @@ async function carregarAgendamentos() {
     let query = supabase
       .from('agendamentos')
       .select('id, usuario_id, data, periodo, tipo_servico, veiculo')
-      .order('data', { ascending: true }); // Ordem geral por data crescente
+      .order('data', { ascending: true });
 
     if (!isAdmin && usuarioAtual) {
       query = query.eq('usuario_id', usuarioAtual.id);
@@ -77,22 +82,24 @@ async function carregarAgendamentos() {
     const { data, error } = await query;
     if (error) throw error;
 
-    // Datas para comparação
-    const hojeISO = dataLocalISO(new Date());
-    const amanhaISO = dataLocalISO(new Date(Date.now() + 86400000));
+    const hoje = new Date();
+    const amanha = new Date();
+    amanha.setDate(hoje.getDate() + 1);
+
+    const hojeISO = dataLocalISO(hoje);
+    const amanhaISO = dataLocalISO(amanha);
 
     let totalHoje = 0;
     let totalAmanha = 0;
 
-    // Criar arrays para cada grupo
     const agendamentosHoje = [];
     const agendamentosAmanha = [];
     const agendamentosFuturos = [];
     const agendamentosPassados = [];
 
     for (const agendamento of data) {
-      // Pegamos só a data (YYYY-MM-DD) para comparar, ignorando horário
-      const dataAgendamentoISO = agendamento.data.split('T')[0];
+      const dataObj = new Date(agendamento.data);
+      const dataAgendamentoISO = dataLocalISO(dataObj);
 
       if (dataAgendamentoISO === hojeISO) {
         totalHoje++;
@@ -107,16 +114,12 @@ async function carregarAgendamentos() {
       }
     }
 
-    // Ordena cada grupo individualmente por data crescente
     const ordenarDataAsc = (a, b) => new Date(a.data) - new Date(b.data);
-
     agendamentosHoje.sort(ordenarDataAsc);
     agendamentosAmanha.sort(ordenarDataAsc);
     agendamentosFuturos.sort(ordenarDataAsc);
-    // Passados ordenados do mais recente para o mais antigo
     agendamentosPassados.sort((a, b) => new Date(b.data) - new Date(a.data));
 
-    // Concatena os grupos na ordem: hoje → amanhã → futuros → passados
     const agendamentosOrdenados = [
       ...agendamentosHoje,
       ...agendamentosAmanha,
@@ -124,7 +127,6 @@ async function carregarAgendamentos() {
       ...agendamentosPassados,
     ];
 
-    // Busca nomes dos usuários para exibição
     const usuarioIds = [...new Set(agendamentosOrdenados.map(a => a.usuario_id))];
     const { data: usuarios } = await supabase
       .from('usuarios')
@@ -136,7 +138,6 @@ async function carregarAgendamentos() {
       usuarios.forEach(u => mapaUsuarios[u.id] = u.nome);
     }
 
-    // Renderiza a lista na ordem correta
     for (const agendamento of agendamentosOrdenados) {
       const nomeUsuario = mapaUsuarios[agendamento.usuario_id] || 'N/A';
       const dataFormatada = formatarData(agendamento.data);
@@ -168,7 +169,6 @@ async function carregarAgendamentos() {
     loader.style.display = 'none';
   }
 }
-
 
 async function excluirAgendamento(id) {
   if (!confirm('Tem certeza que deseja excluir este agendamento?')) return;
@@ -207,4 +207,9 @@ listaAgendamentos.addEventListener('click', (e) => {
 document.addEventListener('DOMContentLoaded', async () => {
   await carregarUsuarioAtual();
   await carregarAgendamentos();
+
+  // Atualiza automaticamente a lista a cada 20 segundos
+  setInterval(() => {
+    carregarAgendamentos();
+  }, 20000);
 });

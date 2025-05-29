@@ -1,36 +1,36 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const supabaseUrl = Deno.env.get("https://kiqvzarmwooveklezzfm.supabase.co")!;
-const supabaseServiceRoleKey = Deno.env.get("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjA2MDQxMywiZXhwIjoyMDYxNjM2NDEzfQ.dgCI4FpEqGcAeWtgVvd80WjG6v9H26Wq0E8Gp3RKZ-c")!;
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 serve(async (req) => {
-  try {
-    if (req.method !== "POST") {
-      return new Response("Método não permitido", { status: 405 });
-    }
+  const supabase = createClient(
+    Deno.env.get('https://kiqvzarmwooveklezzfm.supabase.co') ?? '',
+    Deno.env.get('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8') ?? ''
+  )
 
-    const { id, is_admin } = await req.json();
+  const { nome } = await req.json()
 
-    if (!id || typeof is_admin !== "boolean") {
-      return new Response("Dados incompletos", { status: 400 });
-    }
+  const {
+    data: { user },
+    error: authError
+  } = await supabase.auth.getUser(req.headers.get('Authorization')!.replace('Bearer ', ''))
 
-    const { error: updateError } = await supabase
-      .from("usuarios")
-      .update({ is_admin })
-      .eq("id", id);
-
-    if (updateError) {
-      return new Response("Erro ao atualizar usuário: " + updateError.message, { status: 500 });
-    }
-
-    return new Response(JSON.stringify({ message: "Usuário atualizado com sucesso" }), {
-      headers: { "Content-Type": "application/json" },
-    });
-
-  } catch (err) {
-    return new Response("Erro interno do servidor: " + err.message, { status: 500 });
+  if (authError || !user) {
+    return new Response(JSON.stringify({ error: 'Usuário não autenticado' }), { status: 401 })
   }
-});
+
+  const { error: insertError } = await supabase
+    .from('usuarios')
+    .insert([{
+      id: user.id,
+      nome: nome || 'Usuário não informado',
+      email: user.email,
+      is_admin: false,
+      role: 'user'
+    }])
+
+  if (insertError) {
+    return new Response(JSON.stringify({ error: insertError.message }), { status: 400 })
+  }
+
+  return new Response(JSON.stringify({ message: 'Perfil criado com sucesso' }), { status: 200 })
+})

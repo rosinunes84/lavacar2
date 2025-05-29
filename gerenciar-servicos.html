@@ -1,4 +1,3 @@
-<!-- gerenciar_servicos.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -17,9 +16,6 @@
     <label for="nomeServico">Nome do Serviço</label>
     <input type="text" id="nomeServico" placeholder="Nome do Serviço" required />
 
-    <label for="precoServico">Preço (R$)</label>
-    <input type="number" id="precoServico" placeholder="Preço (R$)" min="0" step="0.01" required />
-
     <button id="btnAdicionarServico">Adicionar Serviço</button>
   </section>
 
@@ -28,7 +24,6 @@
       <thead>
         <tr>
           <th>Serviço</th>
-          <th>Preço</th>
           <th>Ações</th>
         </tr>
       </thead>
@@ -36,6 +31,109 @@
     </table>
   </main>
 
-  <script type="module" src="js/gerenciar_servicos.js"></script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'; // sua chave
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const nomeServicoInput = document.getElementById('nomeServico');
+    const btnAdicionar = document.getElementById('btnAdicionarServico');
+    const listaServicos = document.getElementById('listaServicos');
+
+    async function carregarServicos() {
+      const { data, error } = await supabase
+        .from('servicos')
+        .select('*');
+
+      if (error) {
+        console.error('Erro ao carregar serviços:', error.message);
+        return;
+      }
+
+      listaServicos.innerHTML = '';
+
+      data.forEach(servico => {
+        const tr = document.createElement('tr');
+
+        const tdNome = document.createElement('td');
+        tdNome.textContent = servico.nome;
+
+        const tdAcoes = document.createElement('td');
+
+        const btnEditar = document.createElement('button');
+        btnEditar.textContent = 'Editar';
+        btnEditar.onclick = () => editarServico(servico.id, servico.nome);
+
+        const btnExcluir = document.createElement('button');
+        btnExcluir.textContent = 'Excluir';
+        btnExcluir.onclick = () => excluirServico(servico.id);
+
+        tdAcoes.appendChild(btnEditar);
+        tdAcoes.appendChild(btnExcluir);
+
+        tr.appendChild(tdNome);
+        tr.appendChild(tdAcoes);
+
+        listaServicos.appendChild(tr);
+      });
+    }
+
+    btnAdicionar.addEventListener('click', async () => {
+      const nome = nomeServicoInput.value.trim();
+      if (!nome) {
+        alert('Informe o nome do serviço.');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('servicos')
+        .insert([{ nome }]);
+
+      if (error) {
+        console.error('Erro ao adicionar serviço:', error.message);
+        return;
+      }
+
+      nomeServicoInput.value = '';
+      carregarServicos();
+    });
+
+    async function editarServico(id, nomeAtual) {
+      const novoNome = prompt('Editar nome do serviço:', nomeAtual);
+      if (novoNome && novoNome.trim() !== '') {
+        const { error } = await supabase
+          .from('servicos')
+          .update({ nome: novoNome })
+          .eq('id', id);
+
+        if (error) {
+          console.error('Erro ao editar serviço:', error.message);
+          return;
+        }
+
+        carregarServicos();
+      }
+    }
+
+    async function excluirServico(id) {
+      if (confirm('Tem certeza que deseja excluir este serviço?')) {
+        const { error } = await supabase
+          .from('servicos')
+          .delete()
+          .eq('id', id);
+
+        if (error) {
+          console.error('Erro ao excluir serviço:', error.message);
+          return;
+        }
+
+        carregarServicos();
+      }
+    }
+
+    carregarServicos();
+  </script>
 </body>
 </html>
