@@ -2,11 +2,14 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Painel Administrativo</title>
+  
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   />
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -113,16 +116,16 @@
 
   <div class="container">
     <div class="botoes-navegacao">
-      <button onclick="window.location.href='home.html'">
+      <button onclick="window.location.href='home.html'" title="Voltar para a Home">
         <i class="fas fa-home"></i> Home
       </button>
-      <button onclick="window.location.href='gerenciar-usuarios.html'">
+      <button onclick="window.location.href='gerenciar-usuarios.html'" title="Gerenciar Usuários">
         <i class="fas fa-users-cog"></i> Gerenciar Usuários
       </button>
-      <button onclick="window.location.href='gerenciar-servicos.html'">
+      <button onclick="window.location.href='gerenciar-servicos.html'" title="Gerenciar Serviços">
         <i class="fas fa-concierge-bell"></i> Gerenciar Serviços
       </button>
-      <button onclick="window.location.href='gerenciar-agendamentos.html'">
+      <button onclick="window.location.href='gerenciar-agendamentos.html'" title="Gerenciar Agendamentos">
         <i class="fas fa-calendar-alt"></i> Gerenciar Agendamentos
       </button>
     </div>
@@ -143,9 +146,10 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co'  // Substitua pela sua URL se necessário
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'  // Substitua pela sua chave pública
+    const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
 
+    // Atenção: mantenha esta chave pública apenas se for do tipo "anon" e sem privilégios sensíveis.
     window.supabase = createClient(supabaseUrl, supabaseKey)
   </script>
 

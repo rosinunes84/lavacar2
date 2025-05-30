@@ -136,7 +136,7 @@
 
       const { data, error } = await supabase
         .from('agendamentos')
-        .select('*, servico:servico_id (nome)')
+        .select('id, data, periodo, status, servico:servico_id (nome)')
         .eq('usuario_id', usuarioID)
         .order('data', { ascending: true });
 

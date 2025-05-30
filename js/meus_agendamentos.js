@@ -51,7 +51,7 @@ async function carregarAgendamentos(usuarioID) {
   console.log(`✅ ${data.length} agendamento(s) encontrado(s).`);
 
   data.forEach(agendamento => {
-    const nomeServico = agendamento.servicos?.nome || 'Serviço não informado';
+    const nomeServico = agendamento.servicos.nome || 'Serviço não informado';
     const veiculo = agendamento.veiculo || 'Não informado';
 
     const item = document.createElement("div");

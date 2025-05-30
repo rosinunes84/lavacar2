@@ -4,8 +4,12 @@ const listaAgendamentos = document.getElementById('lista-agendamentos');
 
 async function carregarUsuarioAtual() {
   const { data, error } = await supabase.auth.getUser();
-  if (error || !data?.user) {
-    console.error('Usuário não autenticado:', error);
+  if (error) {
+    console.error('Erro ao obter usuário:', error);
+    return null;
+  }
+  if (!data?.user) {
+    console.warn('Usuário não autenticado.');
     return null;
   }
   return data.user;
@@ -14,10 +18,24 @@ async function carregarUsuarioAtual() {
 async function carregarAgendamentos(usuarioAtual) {
   listaAgendamentos.innerHTML = '<p>Carregando agendamentos...</p>';
 
-  let query = supabase.from('agendamentos').select('*').order('data', { ascending: true });
+  let query = supabase
+    .from('agendamentos')
+    .select('*, servico:servico_id (nome)')
+    .order('data', { ascending: true });
 
   if (usuarioAtual) {
-    const { data: perfil } = await supabase.from('usuarios').select('role').eq('id', usuarioAtual.id).single();
+    const { data: perfil, error: errorPerfil } = await supabase
+      .from('usuarios')
+      .select('role')
+      .eq('id', usuarioAtual.id)
+      .single();
+
+    if (errorPerfil) {
+      console.error('Erro ao obter perfil:', errorPerfil);
+      listaAgendamentos.innerHTML = '<p>Erro ao carregar perfil do usuário.</p>';
+      return;
+    }
+
     if (!perfil || perfil.role !== 'admin') {
       query = query.eq('usuario_id', usuarioAtual.id);
     }
@@ -36,14 +54,27 @@ async function carregarAgendamentos(usuarioAtual) {
   }
 
   const usuarioIds = [...new Set(agendamentos.map(a => a.usuario_id))];
-  const { data: usuarios } = await supabase.from('usuarios').select('id, nome').in('id', usuarioIds);
+
+  const { data: usuarios, error: errorUsuarios } = await supabase
+    .from('usuarios')
+    .select('id, nome')
+    .in('id', usuarioIds);
+
+  if (errorUsuarios) {
+    console.error('Erro ao carregar usuários:', errorUsuarios);
+  }
 
   const mapaUsuarios = {};
   if (usuarios) {
-    usuarios.forEach(u => mapaUsuarios[u.id] = u.nome);
+    usuarios.forEach(u => {
+      mapaUsuarios[u.id] = u.nome;
+    });
   }
 
-  // Monta tabela com agendamentos
+  renderizarTabelaAgendamentos(agendamentos, mapaUsuarios);
+}
+
+function renderizarTabelaAgendamentos(agendamentos, mapaUsuarios) {
   let tabelaHTML = `
     <table class="agendamento-table">
       <thead>
@@ -61,7 +92,10 @@ async function carregarAgendamentos(usuarioAtual) {
 
   agendamentos.forEach(agendamento => {
     const nomeUsuario = mapaUsuarios[agendamento.usuario_id] || 'N/A';
-    const dataFormatada = agendamento.data ? new Date(agendamento.data + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
+    const dataFormatada = agendamento.data
+      ? new Date(agendamento.data + 'T00:00:00').toLocaleDateString('pt-BR')
+      : 'N/A';
+    const nomeServico = agendamento.servico?.nome || agendamento.servico_id || 'N/A';
 
     tabelaHTML += `
       <tr data-id="${agendamento.id}">
@@ -69,7 +103,7 @@ async function carregarAgendamentos(usuarioAtual) {
         <td>${dataFormatada}</td>
         <td>${agendamento.periodo || 'N/A'}</td>
         <td>${agendamento.veiculo || 'N/A'}</td>
-        <td>${agendamento.tipo_servico || 'N/A'}</td>
+        <td>${nomeServico}</td>
         <td>
           <button class="btn-editar" data-id="${agendamento.id}">Editar</button>
           <button class="btn-excluir" data-id="${agendamento.id}">Excluir</button>
@@ -84,15 +118,17 @@ async function carregarAgendamentos(usuarioAtual) {
 
 async function excluirAgendamento(id) {
   if (!confirm('Tem certeza que deseja excluir este agendamento?')) return;
+
   const { error } = await supabase.from('agendamentos').delete().eq('id', id);
   if (error) {
+    console.error('Erro ao excluir agendamento:', error);
     alert('Erro ao excluir agendamento.');
-    console.error(error);
-  } else {
-    alert('Agendamento excluído com sucesso!');
-    const usuarioAtual = await carregarUsuarioAtual();
-    await carregarAgendamentos(usuarioAtual);
+    return;
   }
+
+  alert('Agendamento excluído com sucesso!');
+  const usuarioAtual = await carregarUsuarioAtual();
+  await carregarAgendamentos(usuarioAtual);
 }
 
 function editarAgendamento(id) {
@@ -102,6 +138,7 @@ function editarAgendamento(id) {
 listaAgendamentos.addEventListener('click', (e) => {
   const target = e.target;
   const id = target.getAttribute('data-id');
+
   if (target.classList.contains('btn-excluir')) {
     excluirAgendamento(id);
   } else if (target.classList.contains('btn-editar')) {
