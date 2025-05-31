@@ -9,25 +9,56 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const perfil = document.getElementById('perfil');
 
 async function carregarPerfil() {
-  const { data: { user }, error } = await supabase.auth.getUser();
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-  if (error || !user) {
-    perfil.textContent = 'Nenhum usuário logado.';
-    return;
+    if (userError || !user) {
+      perfil.textContent = 'Nenhum usuário logado.';
+      return;
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError || !sessionData.session) {
+      perfil.textContent = 'Erro ao obter sessão do usuário.';
+      console.error('Erro na sessão:', sessionError);
+      return;
+    }
+
+    const accessToken = sessionData.session.access_token;
+
+    const url = `${supabaseUrl}/rest/v1/usuarios?select=nome,email,role&id=eq.${user.id}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      perfil.textContent = `Erro ao carregar perfil: ${response.status}`;
+      console.error('Erro na resposta:', response.statusText);
+      return;
+    }
+
+    const perfilData = await response.json();
+
+    if (!perfilData || perfilData.length === 0) {
+      perfil.textContent = `Usuário logado: ${user.email} | Perfil não encontrado.`;
+      return;
+    }
+
+    const { nome, email, role } = perfilData[0];
+
+    perfil.textContent = `Usuário: ${nome || 'Não informado'} | Email: ${email || user.email} | Role: ${role || 'Não definida'}`;
+
+  } catch (error) {
+    perfil.textContent = 'Erro ao carregar perfil.';
+    console.error('Erro geral:', error);
   }
-
-  const { data, error: selectError } = await supabase
-    .from('usuarios')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-  if (selectError || !data) {
-    perfil.textContent = `Usuário logado: ${user.email} | Perfil não encontrado.`;
-    return;
-  }
-
-  perfil.textContent = `Usuário: ${data.nome} | Email: ${data.email} | Role: ${data.role}`;
 }
 
 carregarPerfil();

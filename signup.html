@@ -1,173 +1,144 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cadastro</title>
+  <meta charset="UTF-8">
+  <title>Cadastro - LavaCar</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #3366ff 0%, #6699ff 100%);
       margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #007BFF, #00BFFF);
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      color: #333;
     }
 
     .container {
-      background-color: #fff;
+      background: #fff;
       padding: 40px 30px;
-      border-radius: 12px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-      width: 360px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
       text-align: center;
+      animation: fadeIn 1s ease;
     }
 
-    .logo-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 24px;
-    }
-
-    .logo-container img {
-      width: 120px;
-      height: auto;
-      margin-bottom: 12px;
-    }
-
-    .logo-container h2 {
-      margin: 0;
-      font-weight: 700;
-      color: #264d99;
-      font-size: 1.5rem;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
-      margin-bottom: 24px;
-      font-weight: 700;
-      color: #264d99;
+      margin-bottom: 20px;
+      font-size: 28px;
+      color: #333;
     }
 
     input {
       width: 100%;
-      padding: 14px 12px;
+      padding: 12px 15px;
       margin: 10px 0;
-      border: 1.5px solid #3366ff;
+      border: 1px solid #ddd;
       border-radius: 8px;
-      font-size: 16px;
-      transition: border-color 0.3s ease;
+      font-size: 14px;
+      transition: 0.3s;
     }
 
     input:focus {
+      border-color: #007BFF;
       outline: none;
-      border-color: #264d99;
-      box-shadow: 0 0 8px rgba(38, 77, 153, 0.6);
+      box-shadow: 0 0 5px rgba(0,123,255,0.5);
     }
 
     button {
-      margin-top: 20px;
-      background-color: #3366ff;
-      color: white;
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      background: #007BFF;
+      color: #fff;
       border: none;
       border-radius: 8px;
-      padding: 14px 0;
       font-size: 16px;
-      font-weight: 600;
       cursor: pointer;
-      width: 100%;
-      transition: background-color 0.3s ease;
-      position: relative;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #0056b3;
     }
 
     button:disabled {
-      opacity: 0.7;
+      background: #cccccc;
       cursor: not-allowed;
     }
 
-    .loader {
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid #fff;
-      border-radius: 50%;
-      width: 18px;
-      height: 18px;
-      animation: spin 1s linear infinite;
+    #loader {
       display: none;
-      position: absolute;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-
-    @keyframes spin {
-      0% { transform: translateY(-50%) rotate(0deg); }
-      100% { transform: translateY(-50%) rotate(360deg); }
-    }
-
-    .link-home {
-      display: inline-block;
-      margin-top: 18px;
-      color: #3366ff;
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.3s ease;
-    }
-
-    .link-home:hover {
-      color: #264d99;
+      margin-top: 10px;
+      color: #555;
+      font-size: 14px;
     }
 
     .notification {
       margin-top: 15px;
-      padding: 10px;
-      border-radius: 6px;
-      font-size: 14px;
+      padding: 12px;
+      border-radius: 8px;
       display: none;
+      font-size: 14px;
     }
 
-    .success {
+    .notification.success {
       background-color: #d4edda;
       color: #155724;
-      border: 1px solid #c3e6cb;
     }
 
-    .error {
+    .notification.error {
       background-color: #f8d7da;
       color: #721c24;
-      border: 1px solid #f5c6cb;
+    }
+
+    p {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    p a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+
+    p a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-
   <div class="container">
-    <div class="logo-container">
-      <img src="img/logo.png" alt="Logo" />
-    </div>
+    <h1>Cadastro</h1>
 
-    <h1>Cadastro de Usuário</h1>
+    <input type="text" id="nome" placeholder="Nome completo">
+    <input type="email" id="email" placeholder="E-mail">
+    <input type="password" id="senha" placeholder="Senha">
+    <input type="password" id="confirmarSenha" placeholder="Confirmar senha">
 
-    <input type="text" id="nome" placeholder="Nome completo" required />
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="senha" placeholder="Senha" required />
-    <input type="password" id="confirmarSenha" placeholder="Confirmar senha" required />
-    
-    <button id="btnCadastrar">
-      Cadastrar
-      <div class="loader" id="loader"></div>
-    </button>
+    <button id="btnCadastrar">Cadastrar</button>
 
+    <div id="loader">Processando...</div>
     <div id="notification" class="notification"></div>
 
-    <a href="login.html" class="link-home">← Voltar para Login</a>
+    <p>Já tem conta? <a href="login.html">Login</a></p>
   </div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabase = createClient(
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const supabaseClient = supabase.createClient(
       'https://kiqvzarmwooveklezzfm.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
     );
@@ -183,7 +154,7 @@
       const btn = document.getElementById('btnCadastrar');
       const loader = document.getElementById('loader');
       btn.disabled = true;
-      loader.style.display = 'inline-block';
+      loader.style.display = 'block';
 
       const nome = document.getElementById('nome').value.trim();
       const email = document.getElementById('email').value.trim();
@@ -205,7 +176,7 @@
       }
 
       try {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await supabaseClient.auth.signUp({
           email,
           password: senha
         });
@@ -220,14 +191,14 @@
         const user = data.user;
 
         if (user) {
-          const { error: dbError } = await supabase
+          const { error: dbError } = await supabaseClient
             .from('usuarios')
             .upsert([{ id: user.id, nome, email, role: 'cliente' }]);
 
           if (dbError) {
             showNotification('Erro ao salvar no banco: ' + dbError.message, 'error');
           } else {
-            showNotification('Cadastro realizado com sucesso!', 'success');
+            showNotification('Cadastro realizado com sucesso! Verifique seu Email para confirmar sua conta!', 'success');
             setTimeout(() => {
               window.location.href = 'login.html';
             }, 2000);

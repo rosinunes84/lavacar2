@@ -36,11 +36,12 @@ async function carregarUsuarios() {
     const card = document.createElement('div')
     card.className = 'usuario-card'
 
+    const perfil = usuario.role === 'admin' ? 'Administrador' : 'Cliente'
+
     card.innerHTML = `
       <p><strong>👤 Nome:</strong> ${usuario.nome || 'N/A'}</p>
       <p><strong>📧 Email:</strong> ${usuario.email || 'N/A'}</p>
-      <p><strong>📞 Telefone:</strong> ${usuario.telefone || 'N/A'}</p>
-      <p><strong>🔑 Admin:</strong> ${usuario.is_admin ? '✅ Sim' : '❌ Não'}</p>
+      <p><strong>👑 Perfil:</strong> ${perfil}</p>
       <button class="btn-excluir">🗑️ Excluir</button>
     `
 

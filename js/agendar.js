@@ -56,9 +56,6 @@ document.getElementById('formAgendamento').addEventListener('submit', async (e) 
   const user = data.user;
   const servicoId = document.getElementById('tipoServico').value;
 
-  // Buscar o nome do serviço selecionado
-  console.log("Serviço selecionado:", servicoData);
-
   const { data: servicoData, error: servicoError } = await supabaseClient
     .from('servicos')
     .select('nome')
@@ -70,17 +67,18 @@ document.getElementById('formAgendamento').addEventListener('submit', async (e) 
     return;
   }
 
-  const nomeServico = servicoData?.nome || 'Desconhecido';
-if (!nomeServico) {
-  alert('Erro: nome do serviço não encontrado.');
-  return;
-}
+  const nomeServico = servicoData?.nome;
+  if (!nomeServico) {
+    alert('Erro: nome do serviço não encontrado.');
+    return;
+  }
+
   const dados = {
     usuario_id: user.id,
     data: document.getElementById('data').value,
     periodo: document.getElementById('periodo').value,
     servico_id: servicoId,
-    tipo_servico: nomeServico,  // Salvando o nome do serviço aqui
+    tipo_servico: nomeServico,
     veiculo: document.getElementById('veiculo').value || null,
     observacoes: document.getElementById('observacoes').value || null,
     status: "Pendente"

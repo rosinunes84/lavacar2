@@ -94,7 +94,7 @@ document.getElementById('formEditar').addEventListener('submit', async (e) => {
     console.error(error);
   } else {
     alert('Agendamento atualizado com sucesso!');
-    window.location.href = 'gerenciar-agendamentos.html';
+    window.location.href = 'meus-agendamentos.html';
   }
 });
 

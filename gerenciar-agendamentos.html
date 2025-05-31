@@ -5,120 +5,109 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gerenciar Agendamentos</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #333;
       padding: 20px;
-      background-color: #f2f2f2;
     }
 
     h1 {
       text-align: center;
-      color: #333;
+      font-size: 2rem;
+      color: #1f2937;
+      margin-bottom: 20px;
     }
 
     .nav-buttons {
       display: flex;
       justify-content: center;
-      gap: 10px;
-      margin: 20px 0;
+      gap: 15px;
+      margin-bottom: 30px;
     }
 
     .nav-buttons a {
       padding: 10px 20px;
-      background-color: #3498db;
-      color: white;
+      background-color: #3b82f6;
+      color: #fff;
       text-decoration: none;
-      border-radius: 5px;
-      transition: background-color 0.3s ease;
+      border-radius: 8px;
+      font-weight: 600;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease, background-color 0.2s ease;
     }
 
     .nav-buttons a:hover {
-      background-color: #2980b9;
+      background-color: #2563eb;
+      transform: translateY(-2px);
+    }
+
+    #lista-agendamentos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
     }
 
     .agendamento-card {
       background-color: #fff;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .agendamento-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     }
 
     .agendamento-card p {
-      margin: 5px 0;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      color: #4b5563;
     }
 
-    .agendamento-card button {
-      margin-right: 10px;
-      padding: 6px 12px;
+    .action-buttons {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .action-buttons button {
+      padding: 8px 14px;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
+      font-weight: 600;
       cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.2s ease;
     }
 
     .btn-excluir {
-      background-color: #e74c3c;
-      color: white;
+      background-color: #ef4444;
+      color: #fff;
+    }
+
+    .btn-excluir:hover {
+      background-color: #dc2626;
+      transform: translateY(-1px);
     }
 
     .btn-editar {
-      background-color: #3498db;
-      color: white;
+      background-color: #3b82f6;
+      color: #fff;
     }
 
-    #modal-edicao {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 999;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-content {
-      background-color: white;
-      padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 400px;
-      margin: 100px auto;
-    }
-
-    .modal-content label {
-      display: block;
-      margin: 10px 0 5px;
-    }
-
-    .modal-content input[type="text"],
-    .modal-content input[type="date"],
-    .modal-content input[type="time"],
-    .modal-content select {
-      width: 100%;
-      padding: 8px;
-      box-sizing: border-box;
-      margin-bottom: 10px;
-    }
-
-    .modal-content button {
-      margin-right: 10px;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .modal-content .btn-salvar {
-      background-color: #2ecc71;
-      color: white;
-    }
-
-    .modal-content .btn-cancelar {
-      background-color: #95a5a6;
-      color: white;
+    .btn-editar:hover {
+      background-color: #2563eb;
+      transform: translateY(-1px);
     }
   </style>
 </head>
@@ -132,38 +121,6 @@
 
   <div id="lista-agendamentos">
     <p>Carregando agendamentos...</p>
-  </div>
-
-  <!-- Modal de Edição -->
-  <div id="modal-edicao">
-    <div class="modal-content">
-      <h2>Editar Agendamento</h2>
-
-      <input type="hidden" id="edit-id" />
-
-      <label for="edit-nome">Nome do Cliente:</label>
-      <input type="text" id="edit-nome" />
-
-      <label for="edit-servico">Serviço:</label>
-      <input type="text" id="edit-servico" />
-
-      <label for="edit-data">Data:</label>
-      <input type="date" id="edit-data" />
-
-      <label for="edit-hora">Hora:</label>
-      <input type="time" id="edit-hora" />
-
-      <label for="edit-status">Status:</label>
-      <select id="edit-status">
-        <option value="pendente">Pendente</option>
-        <option value="confirmado">Confirmado</option>
-        <option value="cancelado">Cancelado</option>
-        <option value="concluido">Concluído</option>
-      </select>
-
-      <button class="btn-salvar" onclick="salvarAlteracoes()">Salvar</button>
-      <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
-    </div>
   </div>
 
   <script type="module" src="js/gerenciar_agendamentos.js"></script>
