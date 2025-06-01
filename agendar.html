@@ -60,13 +60,12 @@
     button:hover {
       background-color: #0f67d1;
     }
-    /* Estilo da notificação */
     #notificacao {
       margin-top: 1rem;
       padding: 0.75rem 1rem;
       border-radius: 6px;
       font-weight: bold;
-      display: none; /* Escondida inicialmente */
+      display: none;
     }
     #notificacao.sucesso {
       background-color: #28a745;
@@ -105,10 +104,9 @@
     <label for="veiculo">Veículo (opcional)</label>
     <input type="text" id="veiculo" name="veiculo" placeholder="Ex: Carro, Moto..." />
 
-    <!-- Div para exibir notificações acima do botão -->
     <div id="notificacao"></div>
 
-    <button type="submit">Agendar</button>
+    <button type="submit" id="btnAgendar">Agendar</button>
   </form>
 
   <script type="module">
@@ -121,8 +119,12 @@
     function mostrarNotificacao(mensagem, tipo) {
       const div = document.getElementById('notificacao');
       div.textContent = mensagem;
-      div.className = tipo; // 'sucesso' ou 'erro'
+      div.className = tipo;
       div.style.display = 'block';
+
+      setTimeout(() => {
+        div.style.display = 'none';
+      }, 3000);
     }
 
     async function verificarSessao() {
@@ -130,9 +132,9 @@
       if (error || !user) {
         alert("Usuário não autenticado. Faça login para continuar.");
         window.location.href = 'index.html';
-        return;
+      } else {
+        carregarServicos();
       }
-      carregarServicos();
     }
 
     async function carregarServicos() {
@@ -145,8 +147,8 @@
         .order('nome', { ascending: true });
 
       if (error) {
-        alert('Erro ao carregar serviços: ' + error.message);
         select.innerHTML = '<option value="">Erro ao carregar serviços</option>';
+        console.error('Erro:', error.message);
         return;
       }
 
@@ -167,6 +169,10 @@
     document.getElementById('formAgendamento').addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      const btn = document.getElementById('btnAgendar');
+      btn.disabled = true;
+      btn.textContent = 'Agendando...';
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         alert("Usuário não autenticado.");
@@ -185,6 +191,8 @@
 
       if (!dados.data || !dados.periodo || !dados.servico_id) {
         mostrarNotificacao('Por favor, preencha todos os campos obrigatórios.', 'erro');
+        btn.disabled = false;
+        btn.textContent = 'Agendar';
         return;
       }
 
@@ -195,9 +203,10 @@
       if (error) {
         mostrarNotificacao('Erro ao agendar: ' + error.message, 'erro');
         console.error(error);
+        btn.disabled = false;
+        btn.textContent = 'Agendar';
       } else {
         mostrarNotificacao('Agendamento realizado com sucesso!', 'sucesso');
-        // Espera 2 segundos e redireciona para meus-agendamentos.html
         setTimeout(() => {
           window.location.href = 'meus-agendamentos.html';
         }, 2000);
