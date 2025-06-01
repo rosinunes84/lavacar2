@@ -14,6 +14,7 @@
       justify-content: center;
       align-items: center;
       color: #333;
+      padding: 10px; /* para evitar colar nas bordas em telas pequenas */
     }
 
     .container {
@@ -22,7 +23,9 @@
       border-radius: 12px;
       box-shadow: 0 12px 30px rgba(0,0,0,0.12);
       width: 360px;
+      max-width: 100%;
       text-align: center;
+      box-sizing: border-box;
     }
 
     .logo-container {
@@ -36,6 +39,8 @@
       width: 120px;
       height: auto;
       margin-bottom: 12px;
+      max-width: 100%;
+      height: auto;
     }
 
     .logo-container h2 {
@@ -49,6 +54,7 @@
       margin-bottom: 24px;
       font-weight: 700;
       color: #264d99;
+      font-size: 1.8rem;
     }
 
     input {
@@ -59,6 +65,7 @@
       border-radius: 8px;
       font-size: 16px;
       transition: border-color 0.3s ease;
+      box-sizing: border-box;
     }
 
     input:focus {
@@ -113,6 +120,8 @@
       text-decoration: none;
       font-weight: 600;
       transition: color 0.3s ease;
+      font-size: 1rem;
+      word-break: break-word;
     }
 
     .link-home:hover {
@@ -125,6 +134,7 @@
       border-radius: 6px;
       font-size: 14px;
       display: none;
+      word-wrap: break-word;
     }
 
     .success {
@@ -138,6 +148,32 @@
       color: #721c24;
       border: 1px solid #f5c6cb;
     }
+
+    /* Responsividade */
+    @media (max-width: 400px) {
+      .container {
+        padding: 30px 20px;
+        width: 100%;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      input {
+        font-size: 14px;
+        padding: 12px 10px;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 12px 0;
+      }
+
+      .link-home {
+        font-size: 0.9rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -145,6 +181,8 @@
   <div class="container">
     <div class="logo-container">
       <img src="img/logo.png" alt="Logo" />
+      <!-- Se quiser o título da logo, pode descomentar a linha abaixo -->
+      <!-- <h2>Nome do App</h2> -->
     </div>
 
     <h1>Login</h1>
