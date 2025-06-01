@@ -1,72 +1,73 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Confirmação de E-mail</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f0f4f8;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
+      background: linear-gradient(135deg, #3366ff 0%, #6699ff 100%);
+      color: #fff;
+      text-align: center;
+      padding: 50px;
     }
     .container {
-      background: white;
+      background: rgba(0,0,0,0.3);
       padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      text-align: center;
-      max-width: 400px;
+      border-radius: 12px;
+      display: inline-block;
     }
     h1 {
-      color: #2c3e50;
       margin-bottom: 20px;
     }
-    p {
-      color: #34495e;
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #fff;
+      color: #3366ff;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
+
   <div class="container">
-    <h1>Confirmando E-mail...</h1>
-    <p>Aguarde enquanto confirmamos sua conta.</p>
+    <h1 id="status">Validando confirmação...</h1>
+    <p id="details">Aguarde enquanto validamos sua conta.</p>
+    <a href="login.html" style="display:none;" id="loginLink">Ir para Login</a>
   </div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(
+      'https://kiqvzarmwooveklezzfm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+    )
 
-    async function confirmarEmail() {
-      const url = window.location.href;
+    const statusEl = document.getElementById('status');
+    const detailsEl = document.getElementById('details');
+    const loginLink = document.getElementById('loginLink');
 
-      const { error } = await supabase.auth.exchangeCodeForSession(url);
+    async function confirmEmail() {
+      const { error } = await supabase.auth.exchangeCodeForSession();
 
-      const container = document.querySelector('.container');
       if (error) {
-        container.innerHTML = `
-          <h1>Erro</h1>
-          <p>Não foi possível confirmar o e-mail. Por favor, tente novamente.</p>
-        `;
+        statusEl.textContent = 'Erro na confirmação!';
+        detailsEl.textContent = error.message;
       } else {
-        container.innerHTML = `
-          <h1>E-mail Confirmado!</h1>
-          <p>Sua conta foi ativada com sucesso. Você será redirecionado...</p>
-        `;
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 3000);
+        statusEl.textContent = 'E-mail confirmado com sucesso!';
+        detailsEl.textContent = 'Sua conta foi verificada. Agora você pode fazer login.';
+        loginLink.style.display = 'inline-block';
       }
     }
 
-    confirmarEmail();
+    confirmEmail();
   </script>
+
 </body>
 </html>
