@@ -1,38 +1,72 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Confirmação de E-mail</title>
   <style>
-    body { font-family: Arial; text-align: center; margin-top: 50px; }
-    .loading { font-size: 18px; color: #333; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 400px;
+    }
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+    p {
+      color: #34495e;
+    }
   </style>
 </head>
 <body>
-  <h1>Confirmando seu e-mail...</h1>
-  <p class="loading">Aguarde, estamos processando a confirmação.</p>
+  <div class="container">
+    <h1>Confirmando E-mail...</h1>
+    <p>Aguarde enquanto confirmamos sua conta.</p>
+  </div>
 
   <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co'
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    async function handleConfirmation() {
-      const { data, error } = await supabase.auth.getSessionFromUrl()
+    async function confirmarEmail() {
+      const url = window.location.href;
 
+      const { error } = await supabase.auth.exchangeCodeForSession(url);
+
+      const container = document.querySelector('.container');
       if (error) {
-        document.querySelector('.loading').textContent = 'Erro ao confirmar: ' + error.message
+        container.innerHTML = `
+          <h1>Erro</h1>
+          <p>Não foi possível confirmar o e-mail. Por favor, tente novamente.</p>
+        `;
       } else {
-        document.querySelector('.loading').textContent = 'E-mail confirmado com sucesso! Redirecionando...'
+        container.innerHTML = `
+          <h1>E-mail Confirmado!</h1>
+          <p>Sua conta foi ativada com sucesso. Você será redirecionado...</p>
+        `;
         setTimeout(() => {
-          window.location.href = 'login.html'
-        }, 2000)
+          window.location.href = '/';
+        }, 3000);
       }
     }
 
-    handleConfirmation()
+    confirmarEmail();
   </script>
 </body>
 </html>
