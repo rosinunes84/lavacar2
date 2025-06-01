@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Confirmação de E-mail</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 50px; }
+    .loading { font-size: 18px; color: #333; }
+  </style>
+</head>
+<body>
+  <h1>Confirmando seu e-mail...</h1>
+  <p class="loading">Aguarde, estamos processando a confirmação.</p>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+
+    const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    async function handleConfirmation() {
+      const { data, error } = await supabase.auth.getSessionFromUrl()
+
+      if (error) {
+        document.querySelector('.loading').textContent = 'Erro ao confirmar: ' + error.message
+      } else {
+        document.querySelector('.loading').textContent = 'E-mail confirmado com sucesso! Redirecionando...'
+        setTimeout(() => {
+          window.location.href = 'login.html'
+        }, 2000)
+      }
+    }
+
+    handleConfirmation()
+  </script>
+</body>
+</html>
