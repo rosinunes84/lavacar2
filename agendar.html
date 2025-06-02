@@ -124,7 +124,7 @@
 
       setTimeout(() => {
         div.style.display = 'none';
-      }, 3000);
+      }, 10000);
     }
 
     async function verificarSessao() {
@@ -166,6 +166,12 @@
       });
     }
 
+    // Formata a data dd/mm/aaaa
+    function formatarData(dataISO) {
+      const partes = dataISO.split('-');
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
     document.getElementById('formAgendamento').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -180,25 +186,37 @@
         return;
       }
 
-      const dados = {
-        usuario_id: user.id,
-        data: document.getElementById('data').value,
-        periodo: document.getElementById('periodo').value,
-        servico_id: document.getElementById('tipoServico').value,
-        veiculo: document.getElementById('veiculo').value || null,
-        status: "Pendente"
-      };
+      const dataAgendamento = document.getElementById('data').value;
+      const periodo = document.getElementById('periodo').value;
+      const servico_id = document.getElementById('tipoServico').value;
+      const veiculo = document.getElementById('veiculo').value || 'Não informado';
 
-      if (!dados.data || !dados.periodo || !dados.servico_id) {
+      if (!dataAgendamento || !periodo || !servico_id) {
         mostrarNotificacao('Por favor, preencha todos os campos obrigatórios.', 'erro');
         btn.disabled = false;
         btn.textContent = 'Agendar';
         return;
       }
 
-      const { error } = await supabase
-        .from('agendamentos')
-        .insert([dados]);
+      // Buscar nome do serviço
+      const { data: servicoData, error: servicoError } = await supabase
+        .from('servicos')
+        .select('nome')
+        .eq('id', servico_id)
+        .single();
+
+      const servico_nome = servicoData ? servicoData.nome : 'Desconhecido';
+
+      const dados = {
+        usuario_id: user.id,
+        data: dataAgendamento,
+        periodo: periodo,
+        servico_id: servico_id,
+        veiculo: veiculo,
+        status: "Pendente"
+      };
+
+      const { error } = await supabase.from('agendamentos').insert([dados]);
 
       if (error) {
         mostrarNotificacao('Erro ao agendar: ' + error.message, 'erro');
@@ -207,6 +225,24 @@
         btn.textContent = 'Agendar';
       } else {
         mostrarNotificacao('Agendamento realizado com sucesso!', 'sucesso');
+
+        // Definir nome do usuário para o email
+        const usuario_nome = user.user_metadata?.full_name || user.email || 'Usuário';
+
+        // Enviar notificação ao admin via EmailJS
+        emailjs.send("service_n2fghu7", "template_eioflwb", {
+          usuario_nome: usuario_nome,
+          servico_nome: servico_nome,
+          data: formatarData(dataAgendamento),
+          periodo: periodo,
+          veiculo: veiculo
+        })
+        .then(function(response) {
+          console.log('E-mail enviado ao admin!', response.status, response.text);
+        }, function(error) {
+          console.error('Erro ao enviar e-mail:', error);
+        });
+
         setTimeout(() => {
           window.location.href = 'meus-agendamentos.html';
         }, 2000);
@@ -214,6 +250,14 @@
     });
 
     verificarSessao();
+  </script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+  <script type="text/javascript">
+    (function(){
+      emailjs.init("VNibsiGcVU9oTIwE8");  // sua public key do EmailJS
+    })();
   </script>
 
 </body>
