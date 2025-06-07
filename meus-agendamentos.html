@@ -136,7 +136,7 @@
 
       const { data, error } = await supabase
         .from('agendamentos')
-        .select('id, data, periodo, status, servico:servico_id (nome)')
+        .select('id, data, periodo, status, observacoes, servico:servico_id (nome)')
         .eq('usuario_id', usuarioID)
         .order('data', { ascending: true });
 
@@ -155,7 +155,6 @@
       data.forEach(agendamento => {
         const nomeServico = agendamento.servico ? agendamento.servico.nome : 'Serviço não informado';
 
-        // Corrigido: garantir a data no horário local para evitar erro de fuso
         const dataObj = new Date(agendamento.data + 'T00:00:00');
         const dataFormatada = dataObj.toLocaleDateString('pt-BR');
 
@@ -166,6 +165,7 @@
           <p><strong>Período:</strong> ${agendamento.periodo}</p>
           <p><strong>Serviço:</strong> ${nomeServico}</p>
           <p><strong>Status:</strong> ${agendamento.status}</p>
+          <p><strong>Observações:</strong> ${agendamento.observacoes || 'Nenhuma'}</p>
           <div class="acoes">
             <button class="btn-pequeno editar">Editar</button>
             <button class="btn-pequeno excluir">Excluir</button>
@@ -173,12 +173,10 @@
           <hr>
         `;
 
-        // Botão Editar
         item.querySelector('.editar').addEventListener('click', () => {
           window.location.href = `editar-agendamento.html?id=${agendamento.id}`;
         });
 
-        // Botão Excluir
         item.querySelector('.excluir').addEventListener('click', async () => {
           if (confirm('Tem certeza que deseja excluir este agendamento?')) {
             const { error } = await supabase
@@ -205,14 +203,13 @@
     }
 
     function irHome() {
-      window.location.href = "home.html";  // Ajuste conforme sua página Home real
+      window.location.href = "home.html";
     }
 
     function novoAgendamento() {
-      window.location.href = "agendar.html"; // Ajuste conforme sua página de novo agendamento real
+      window.location.href = "agendar.html";
     }
 
-    // Event listeners para os botões principais
     document.getElementById('btn-home').addEventListener('click', irHome);
     document.getElementById('btn-novo').addEventListener('click', novoAgendamento);
     document.getElementById('btn-atualizar').addEventListener('click', carregarAgendamentos);

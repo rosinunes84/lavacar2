@@ -5,20 +5,12 @@ const contadorHoje = document.getElementById('contador-hoje');
 const contadorAmanha = document.getElementById('contador-amanha');
 const loader = document.getElementById('loader');
 
+const LIMITE_POR_PERIODO = 5; // Limite máximo de agendamentos por período
+
 function formatarDataBR(data) {
   return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
 }
 
-// Função que verifica se duas datas são o mesmo dia (ano, mês, dia)
-function isMesmaData(data1, data2) {
-  return (
-    data1.getFullYear() === data2.getFullYear() &&
-    data1.getMonth() === data2.getMonth() &&
-    data1.getDate() === data2.getDate()
-  );
-}
-
-// Função para adicionar uma seção com título e lista de agendamentos
 function adicionarSecao(titulo, agendamentos, mapaUsuarios) {
   if (agendamentos.length === 0) return;
 
@@ -26,28 +18,57 @@ function adicionarSecao(titulo, agendamentos, mapaUsuarios) {
   tituloEl.textContent = titulo;
   listaAgendamentos.appendChild(tituloEl);
 
-  agendamentos.forEach(agendamento => {
-    const nomeUsuario = mapaUsuarios[agendamento.usuario_id] || 'N/A';
-    const nomeServico = agendamento.servico ? agendamento.servico.nome : 'N/A';
+  // Agrupa agendamentos por data e período
+  const agendamentosPorData = {};
 
-    const div = document.createElement('div');
-    div.className = 'agendamento';
-    div.innerHTML = `
-      <p><strong>Usuário:</strong> ${nomeUsuario}</p>
-      <p><strong>Data:</strong> ${formatarDataBR(agendamento.data)}</p>
-      <p><strong>Período:</strong> ${agendamento.periodo || 'N/A'}</p>
-      <p><strong>Veículo:</strong> ${agendamento.veiculo || 'N/A'}</p>
-      <p><strong>Serviço:</strong> ${nomeServico}</p>
-    `;
-    listaAgendamentos.appendChild(div);
+  agendamentos.forEach(agendamento => {
+    const data = agendamento.data;
+    const periodo = agendamento.periodo || 'N/A';
+
+    if (!agendamentosPorData[data]) agendamentosPorData[data] = {};
+    if (!agendamentosPorData[data][periodo]) agendamentosPorData[data][periodo] = [];
+
+    agendamentosPorData[data][periodo].push(agendamento);
+  });
+
+  // Renderiza agendamentos agrupados
+  Object.entries(agendamentosPorData).forEach(([data, periodos]) => {
+    const dataTitulo = document.createElement('h4');
+    dataTitulo.textContent = `Data: ${formatarDataBR(data)}`;
+    listaAgendamentos.appendChild(dataTitulo);
+
+    Object.entries(periodos).forEach(([periodo, ags]) => {
+      const bloqueado = ags.length >= LIMITE_POR_PERIODO;
+      const periodoTitulo = document.createElement('h5');
+      periodoTitulo.textContent = `Período: ${periodo} (${ags.length}/${LIMITE_POR_PERIODO})${bloqueado ? ' - BLOQUEADO' : ''}`;
+      periodoTitulo.style.color = bloqueado ? 'red' : 'black';
+      listaAgendamentos.appendChild(periodoTitulo);
+
+      ags.forEach(agendamento => {
+        const nomeUsuario = mapaUsuarios[agendamento.usuario_id] || 'N/A';
+        const nomeServico = agendamento.servico?.nome || 'N/A';
+        const observacoes = agendamento.observacoes || 'Nenhuma observação';
+
+        const div = document.createElement('div');
+        div.className = 'agendamento';
+        div.innerHTML = `
+          <p><strong>Usuário:</strong> ${nomeUsuario}</p>
+          <p><strong>Período:</strong> ${periodo}</p>
+          <p><strong>Veículo:</strong> ${agendamento.veiculo || 'N/A'}</p>
+          <p><strong>Serviço:</strong> ${nomeServico}</p>
+          <p><strong>Observações:</strong> ${observacoes}</p>
+        `;
+        listaAgendamentos.appendChild(div);
+      });
+    });
   });
 }
 
 async function carregarAgendamentosAdmin() {
-  loader.style.display = 'block';
   listaAgendamentos.innerHTML = '';
   contadorHoje.textContent = '';
   contadorAmanha.textContent = '';
+  loader.style.display = 'block';
 
   const { data: agendamentos, error } = await supabase
     .from('agendamentos')
@@ -67,10 +88,8 @@ async function carregarAgendamentosAdmin() {
     return;
   }
 
-  // Pegar IDs únicos de usuários
   const usuarioIds = [...new Set(agendamentos.map(a => a.usuario_id))];
 
-  // Buscar nomes dos usuários
   const { data: usuarios, error: errorUsuarios } = await supabase
     .from('usuarios')
     .select('id, nome')
@@ -87,14 +106,12 @@ async function carregarAgendamentosAdmin() {
     });
   }
 
-  // Datas de referência para hoje e amanhã (sem horário)
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
 
   const amanha = new Date(hoje);
   amanha.setDate(hoje.getDate() + 1);
 
-  // Separar os agendamentos em grupos
   const agendamentosHoje = [];
   const agendamentosAmanha = [];
   const agendamentosFuturos = [];
@@ -114,11 +131,10 @@ async function carregarAgendamentosAdmin() {
     }
   });
 
-  // Funções para ordenar os grupos
+  // Ordenação
   function ordenarPorDataAsc(arr) {
     return arr.sort((a, b) => new Date(a.data) - new Date(b.data));
   }
-
   function ordenarPorDataDesc(arr) {
     return arr.sort((a, b) => new Date(b.data) - new Date(a.data));
   }
@@ -128,11 +144,11 @@ async function carregarAgendamentosAdmin() {
   ordenarPorDataAsc(agendamentosFuturos);
   ordenarPorDataDesc(agendamentosAntigos);
 
-  // Atualizar contadores
+  // Atualiza contadores
   contadorHoje.textContent = `Agendamentos para Hoje: ${agendamentosHoje.length}`;
   contadorAmanha.textContent = `Agendamentos para Amanhã: ${agendamentosAmanha.length}`;
 
-  // Montar a listagem na ordem correta
+  // Renderiza seções
   adicionarSecao('Agendamentos de Hoje', agendamentosHoje, mapaUsuarios);
   adicionarSecao('Agendamentos de Amanhã', agendamentosAmanha, mapaUsuarios);
   adicionarSecao('Agendamentos Futuros', agendamentosFuturos, mapaUsuarios);

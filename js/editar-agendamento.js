@@ -13,7 +13,7 @@ if (!agendamentoId) {
   window.location.href = 'gerenciar-agendamentos.html';
 }
 
-// Carrega a lista de serviços para o select, selecionando o que já está atribuído (se existir)
+// Carrega a lista de serviços para o select
 async function carregarServicos(servicoSelecionadoId) {
   const select = document.getElementById('tipoServico');
   select.innerHTML = '<option value="">Carregando serviços...</option>';
@@ -63,6 +63,7 @@ async function carregarAgendamento() {
   document.getElementById('periodo').value = data.periodo ?? '';
   document.getElementById('tipoServico').value = data.servico_id ?? '';
   document.getElementById('veiculo').value = data.veiculo ?? '';
+  document.getElementById('observacoes').value = data.observacoes ?? '';
 }
 
 // Manipulador do envio do formulário de edição
@@ -73,9 +74,10 @@ document.getElementById('formEditar').addEventListener('submit', async (e) => {
   const periodo = document.getElementById('periodo').value;
   const servicoId = document.getElementById('tipoServico').value;
   const veiculo = document.getElementById('veiculo').value.trim();
+  const observacoes = document.getElementById('observacoes').value.trim();
 
   if (!dataAgendamento || !periodo || !servicoId || !veiculo) {
-    alert('Por favor, preencha todos os campos.');
+    alert('Por favor, preencha todos os campos obrigatórios.');
     return;
   }
 
@@ -85,7 +87,8 @@ document.getElementById('formEditar').addEventListener('submit', async (e) => {
       data: dataAgendamento,
       periodo: periodo,
       servico_id: servicoId,
-      veiculo: veiculo
+      veiculo: veiculo,
+      observacoes: observacoes
     })
     .eq('id', agendamentoId);
 
@@ -98,6 +101,6 @@ document.getElementById('formEditar').addEventListener('submit', async (e) => {
   }
 });
 
-// Inicializa carregando os dados do agendamento e serviços
+// Inicializa a página
 carregarAgendamento();
 carregarServicos();

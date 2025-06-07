@@ -1,8 +1,6 @@
 import { supabase } from './supabase-client.js';
 
 const listaAgendamentos = document.getElementById('lista-agendamentos');
-
-// Criar botão excluir selecionados (assumindo que ele está no HTML com id "btn-excluir-selecionados")
 const btnExcluirSelecionados = document.getElementById('btn-excluir-selecionados');
 
 async function carregarUsuarioAtual() {
@@ -23,7 +21,7 @@ async function carregarAgendamentos(usuarioAtual) {
 
   let query = supabase
     .from('agendamentos')
-    .select('*, servico:servico_id (nome)')
+    .select('id, data, periodo, veiculo, usuario_id, servico_id, servico:servico_id (nome)')
     .order('data', { ascending: true });
 
   if (usuarioAtual) {
@@ -78,6 +76,15 @@ async function carregarAgendamentos(usuarioAtual) {
   renderizarTabelaAgendamentos(agendamentos, mapaUsuarios);
 }
 
+// Função para formatar data no formato dd/mm/aaaa manualmente
+function formatarDataDDMMYYYY(dataString) {
+  if (!dataString) return 'N/A';
+  const dataISO = dataString.substring(0, 10); // Pega "aaaa-mm-dd"
+  const partes = dataISO.split('-');
+  if (partes.length !== 3) return 'N/A';
+  return `${partes[2]}/${partes[1]}/${partes[0]}`; // dd/mm/aaaa
+}
+
 function renderizarTabelaAgendamentos(agendamentos, mapaUsuarios) {
   let tabelaHTML = `
     <table class="agendamento-table" style="width: 100%; border-collapse: collapse;">
@@ -97,10 +104,8 @@ function renderizarTabelaAgendamentos(agendamentos, mapaUsuarios) {
 
   agendamentos.forEach(agendamento => {
     const nomeUsuario = mapaUsuarios[agendamento.usuario_id] || 'N/A';
-    const dataFormatada = agendamento.data
-      ? new Date(agendamento.data + 'T00:00:00').toLocaleDateString('pt-BR')
-      : 'N/A';
-    const nomeServico = agendamento.servico?.nome || agendamento.servico_id || 'N/A';
+    const dataFormatada = formatarDataDDMMYYYY(agendamento.data);
+    const nomeServico = agendamento.servico?.nome || 'N/A';
 
     tabelaHTML += `
       <tr data-id="${agendamento.id}">
@@ -123,10 +128,8 @@ function renderizarTabelaAgendamentos(agendamentos, mapaUsuarios) {
   tabelaHTML += '</tbody></table>';
   listaAgendamentos.innerHTML = tabelaHTML;
 
-  // Exibir botão excluir selecionados
   btnExcluirSelecionados.style.display = 'block';
 
-  // Configurar eventos para checkbox "Selecionar Todos"
   const checkboxTodos = document.getElementById('checkbox-todos');
   checkboxTodos.addEventListener('change', () => {
     const checkboxes = document.querySelectorAll('.checkbox-agendamento');
@@ -134,7 +137,6 @@ function renderizarTabelaAgendamentos(agendamentos, mapaUsuarios) {
   });
 }
 
-// Excluir único agendamento
 async function excluirAgendamento(id) {
   if (!confirm('Tem certeza que deseja excluir este agendamento?')) return;
 
@@ -150,7 +152,6 @@ async function excluirAgendamento(id) {
   await carregarAgendamentos(usuarioAtual);
 }
 
-// Excluir múltiplos agendamentos selecionados
 async function excluirSelecionados() {
   const checkboxes = document.querySelectorAll('.checkbox-agendamento:checked');
   if (checkboxes.length === 0) {
@@ -175,22 +176,29 @@ async function excluirSelecionados() {
 }
 
 function editarAgendamento(id) {
+  if (!id) {
+    alert('ID do agendamento não encontrado para edição.');
+    return;
+  }
   window.location.href = `editar-agendamento.html?id=${id}`;
 }
 
-// Eventos de clique na tabela para editar e excluir único
 listaAgendamentos.addEventListener('click', (e) => {
-  const target = e.target;
-  const id = target.getAttribute('data-id');
-
-  if (target.classList.contains('btn-excluir')) {
-    excluirAgendamento(id);
-  } else if (target.classList.contains('btn-editar')) {
+  const btnEditar = e.target.closest('.btn-editar');
+  if (btnEditar) {
+    const id = btnEditar.getAttribute('data-id');
     editarAgendamento(id);
+    return;
+  }
+
+  const btnExcluir = e.target.closest('.btn-excluir');
+  if (btnExcluir) {
+    const id = btnExcluir.getAttribute('data-id');
+    excluirAgendamento(id);
+    return;
   }
 });
 
-// Evento do botão excluir selecionados
 btnExcluirSelecionados.addEventListener('click', excluirSelecionados);
 
 document.addEventListener('DOMContentLoaded', async () => {

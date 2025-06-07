@@ -73,6 +73,15 @@
       border-radius: 8px;
       margin-bottom: 15px;
     }
+    .agendamento p {
+      margin: 4px 0;
+    }
+    .observacoes {
+      font-style: italic;
+      color: #555;
+      margin-top: 8px;
+      white-space: pre-wrap; /* mantém quebras de linha */
+    }
     .acoes {
       margin-top: 10px;
     }
@@ -128,6 +137,11 @@
       <button onclick="window.location.href='gerenciar-agendamentos.html'" title="Gerenciar Agendamentos">
         <i class="fas fa-calendar-alt"></i> Gerenciar Agendamentos
       </button>
+
+      <!-- Novo botão -->
+      <button onclick="window.location.href='gerenciar-quantidade.html'" title="Gerenciar Quantidade de Agendamentos" onclick="gerenciarQuantidadeAgendamentos()">
+        <i class="fas fa-chart-bar"></i> Gerenciar Quantidade
+      </button>
     </div>
 
     <div class="resumo">
@@ -139,6 +153,15 @@
 
     <div id="lista-agendamentos">
       <!-- Lista de agendamentos será carregada aqui -->
+      <!-- Exemplo gerado pelo JS:
+      <div class="agendamento">
+        <p><strong>Usuário:</strong> João Silva</p>
+        <p><strong>Período:</strong> Manhã</p>
+        <p><strong>Veículo:</strong> Fusca 1970</p>
+        <p><strong>Serviço:</strong> Lavagem Completa</p>
+        <p class="observacoes"><strong>Observações:</strong> Levar cera extra.</p>
+      </div>
+      -->
     </div>
   </div>
 

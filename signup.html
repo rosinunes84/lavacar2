@@ -5,9 +5,8 @@
   <title>Cadastro - LavaCar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    /* ESTILO DO FORMULÁRIO */
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -29,12 +28,6 @@
       width: 100%;
       max-width: 400px;
       text-align: center;
-      animation: fadeIn 1s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
@@ -43,51 +36,34 @@
       color: #333;
     }
 
-    input {
+    input, button {
       width: 100%;
-      padding: 12px 15px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
+      padding: 12px;
+      margin-top: 10px;
       border-radius: 8px;
       font-size: 14px;
-      transition: 0.3s;
+    }
+
+    input {
+      border: 1px solid #ddd;
     }
 
     input:focus {
       border-color: #007BFF;
       outline: none;
-      box-shadow: 0 0 5px rgba(0,123,255,0.5);
     }
 
     button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      margin-bottom: 10px;
       background: #007BFF;
       color: #fff;
       border: none;
-      border-radius: 8px;
       font-size: 16px;
       cursor: pointer;
-      transition: 0.3s;
     }
 
-    button:hover {
-      background: #0056b3;
-    }
+    button:hover { background: #0056b3; }
 
-    button:disabled {
-      background: #cccccc;
-      cursor: not-allowed;
-    }
-
-    #loader {
-      display: none;
-      margin-top: 10px;
-      color: #555;
-      font-size: 14px;
-    }
+    #loader { display: none; margin-top: 10px; }
 
     .notification {
       margin-top: 15px;
@@ -97,29 +73,12 @@
       font-size: 14px;
     }
 
-    .notification.success {
-      background-color: #d4edda;
-      color: #155724;
-    }
+    .notification.success { background: #d4edda; color: #155724; }
+    .notification.error { background: #f8d7da; color: #721c24; }
 
-    .notification.error {
-      background-color: #f8d7da;
-      color: #721c24;
-    }
-
-    p {
-      margin-top: 15px;
-      font-size: 14px;
-    }
-
-    p a {
-      color: #007BFF;
-      text-decoration: none;
-    }
-
-    p a:hover {
-      text-decoration: underline;
-    }
+    p { margin-top: 15px; font-size: 14px; }
+    p a { color: #007BFF; text-decoration: none; }
+    p a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -153,11 +112,16 @@
       notification.style.display = 'block';
     }
 
+    let isSubmitting = false;
+
     async function cadastrar() {
+      if (isSubmitting) return;
+
       const btn = document.getElementById('btnCadastrar');
       const loader = document.getElementById('loader');
       btn.disabled = true;
       loader.style.display = 'block';
+      isSubmitting = true;
 
       const nome = document.getElementById('nome').value.trim();
       const email = document.getElementById('email').value.trim();
@@ -166,53 +130,65 @@
 
       if (!nome || !email || !senha || !confirmarSenha) {
         showNotification('Por favor, preencha todos os campos.', 'error');
-        btn.disabled = false;
-        loader.style.display = 'none';
+        resetForm();
         return;
       }
 
       if (senha !== confirmarSenha) {
         showNotification('As senhas não coincidem.', 'error');
-        btn.disabled = false;
-        loader.style.display = 'none';
+        resetForm();
         return;
       }
 
       try {
+        console.log("Tentando cadastrar usuário com email:", email);
+
         const { data, error } = await supabaseClient.auth.signUp({
           email,
           password: senha
         });
 
+        console.log("Resposta do signUp:", { data, error });
+
         if (error) {
           showNotification('Erro no cadastro: ' + error.message, 'error');
-          btn.disabled = false;
-          loader.style.display = 'none';
+          resetForm();
           return;
         }
 
-        const user = data.user;
-
+        const user = data?.user;
         if (user) {
+          console.log("Usuário criado:", user);
+
           const { error: dbError } = await supabaseClient
             .from('usuarios')
             .upsert([{ id: user.id, nome, email, role: 'cliente' }]);
 
+          console.log("Resultado do insert no banco:", dbError || "Sucesso");
+
           if (dbError) {
             showNotification('Erro ao salvar no banco: ' + dbError.message, 'error');
           } else {
-            showNotification('Cadastro realizado com sucesso! Verifique seu Email para confirmar sua conta!', 'success');
+            showNotification('Cadastro realizado com sucesso! Verifique seu e-mail.', 'success');
             setTimeout(() => {
               window.location.href = 'login.html';
-            }, 2000);
+            }, 3000);
           }
         }
       } catch (err) {
+        console.error("Erro inesperado:", err);
         showNotification('Erro inesperado: ' + err.message, 'error');
       } finally {
-        btn.disabled = false;
-        loader.style.display = 'none';
+        resetForm();
       }
+    }
+
+    function resetForm() {
+      const btn = document.getElementById('btnCadastrar');
+      const loader = document.getElementById('loader');
+      btn.disabled = false;
+      loader.style.display = 'none';
+      isSubmitting = false;
     }
 
     document.getElementById('btnCadastrar').addEventListener('click', cadastrar);

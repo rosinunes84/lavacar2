@@ -25,7 +25,7 @@
       font-weight: 600;
       color: #333;
     }
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
@@ -35,7 +35,7 @@
       background: #fff;
       transition: border-color 0.3s ease;
     }
-    input:focus, select:focus {
+    input:focus, select:focus, textarea:focus {
       border-color: #007BFF;
       outline: none;
     }
@@ -93,8 +93,10 @@
     </select>
 
     <label for="veiculo">Veículo:</label>
-<input type="text" id="veiculo" name="veiculo" required autocomplete="off" placeholder="Digite seu veículo" />
+    <input type="text" id="veiculo" name="veiculo" required autocomplete="off" placeholder="Digite seu veículo" />
 
+    <label for="observacoes">Observações:</label>
+    <textarea id="observacoes" name="observacoes" rows="4" placeholder="Digite observações adicionais (opcional)"></textarea>
 
     <button type="submit">Salvar</button>
   </form>
