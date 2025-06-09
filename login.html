@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login</title>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    window.supabase = createClient(
+      'https://kiqvzarmwooveklezzfm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+    );
+  </script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -38,13 +45,6 @@
       margin-bottom: 12px;
     }
 
-    .logo-container h2 {
-      margin: 0;
-      font-weight: 700;
-      color: #264d99;
-      font-size: 1.5rem;
-    }
-
     h1 {
       margin-bottom: 24px;
       font-weight: 700;
@@ -58,7 +58,6 @@
       border: 1.5px solid #3366ff;
       border-radius: 8px;
       font-size: 16px;
-      transition: border-color 0.3s ease;
     }
 
     input:focus {
@@ -78,7 +77,6 @@
       font-weight: 600;
       cursor: pointer;
       width: 100%;
-      transition: background-color 0.3s ease;
       position: relative;
     }
 
@@ -112,7 +110,6 @@
       color: #3366ff;
       text-decoration: none;
       font-weight: 600;
-      transition: color 0.3s ease;
     }
 
     .link-home:hover {
@@ -163,55 +160,53 @@
   </div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabase = createClient(
-      'https://kiqvzarmwooveklezzfm.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
-    );
-
-    function showNotification(message, type) {
-      const notification = document.getElementById('notification');
-      notification.textContent = message;
-      notification.className = `notification ${type}`;
-      notification.style.display = 'block';
-    }
-
     async function login() {
       const btn = document.getElementById('btnLogin');
       const loader = document.getElementById('loader');
-      btn.disabled = true;
-      loader.style.display = 'inline-block';
-
       const email = document.getElementById('email').value.trim();
       const senha = document.getElementById('senha').value.trim();
+      const notify = document.getElementById('notification');
+
+      btn.disabled = true;
+      loader.style.display = 'inline-block';
+      notify.style.display = 'none';
 
       if (!email || !senha) {
-        showNotification('Por favor, preencha todos os campos.', 'error');
+        notify.textContent = 'Preencha todos os campos.';
+        notify.className = 'notification error';
+        notify.style.display = 'block';
         btn.disabled = false;
         loader.style.display = 'none';
         return;
       }
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await window.supabase.auth.signInWithPassword({
           email,
           password: senha
         });
 
         if (error) {
-          showNotification('Erro ao fazer login: ' + error.message, 'error');
+          notify.textContent = 'Erro: ' + error.message;
+          notify.className = 'notification error';
+          notify.style.display = 'block';
         } else if (!data.user?.confirmed_at) {
-          showNotification('Por favor, confirme seu e-mail antes de acessar.', 'error');
-          await supabase.auth.signOut();
+          notify.textContent = 'Confirme seu e-mail antes de acessar.';
+          notify.className = 'notification error';
+          notify.style.display = 'block';
+          await window.supabase.auth.signOut();
         } else {
-          showNotification('Login realizado com sucesso!', 'success');
+          notify.textContent = 'Login realizado com sucesso!';
+          notify.className = 'notification success';
+          notify.style.display = 'block';
           setTimeout(() => {
             window.location.href = 'home.html';
           }, 1500);
         }
       } catch (err) {
-        showNotification('Erro inesperado: ' + err.message, 'error');
+        notify.textContent = 'Erro inesperado: ' + err.message;
+        notify.className = 'notification error';
+        notify.style.display = 'block';
       } finally {
         btn.disabled = false;
         loader.style.display = 'none';

@@ -4,62 +4,48 @@
   <meta charset="UTF-8" />
   <title>Cadastro - LavaCar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: 'Arial', sans-serif;
       background: linear-gradient(135deg, #007BFF, #00BFFF);
       min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      display: flex; justify-content: center; align-items: center;
       padding: 20px;
     }
     .container {
-      background: #fff;
-      padding: 30px 20px;
+      background: #fff; padding: 30px 20px;
       border-radius: 15px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
+      width: 100%; max-width: 400px;
       text-align: center;
     }
-    h1 {
-      margin-bottom: 20px;
-      font-size: 28px;
-      color: #333;
-    }
+    h1 { margin-bottom: 20px; font-size: 28px; color: #333; }
     input, button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 8px;
-      font-size: 14px;
+      width: 100%; padding: 12px; margin-top: 10px;
+      border-radius: 8px; font-size: 14px;
     }
-    input {
-      border: 1px solid #ddd;
-    }
-    input:focus {
-      border-color: #007BFF;
-      outline: none;
-    }
+    input { border: 1px solid #ddd; }
+    input:focus { border-color: #007BFF; outline: none; }
     button {
-      background: #007BFF;
-      color: #fff;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
+      background: #007BFF; color: #fff; border: none;
+      font-size: 16px; cursor: pointer;
     }
     button:hover { background: #0056b3; }
+    #btnGoogle {
+      background: #db4437;
+      color: white;
+      font-weight: bold;
+    }
+    #btnGoogle:hover {
+      background: #c23321;
+    }
     #loader { display: none; margin-top: 10px; }
     .notification {
-      margin-top: 15px;
-      padding: 12px;
-      border-radius: 8px;
-      display: none;
-      font-size: 14px;
+      margin-top: 15px; padding: 12px; border-radius: 8px;
+      display: none; font-size: 14px;
     }
     .notification.success { background: #d4edda; color: #155724; }
     .notification.error { background: #f8d7da; color: #721c24; }
@@ -76,16 +62,25 @@
     <input type="email" id="email" placeholder="E-mail" />
     <input type="password" id="senha" placeholder="Senha" />
     <input type="password" id="confirmarSenha" placeholder="Confirmar senha" />
-
     <button id="btnCadastrar">Cadastrar</button>
+
+    <button id="btnGoogle">Entrar com Google</button>
 
     <div id="loader">Processando...</div>
     <div id="notification" class="notification"></div>
 
-    <p>Já tem conta? <a href="index.html">Login</a></p>
+    <p>Já tem conta? <a href="login.html">Login</a></p>
   </div>
 
   <script>
+    const supabase = window.supabase.createClient(
+      'https://kiqvzarmwooveklezzfm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+    );
+
+    let isSubmitting = false;
+    let lastSubmitTime = 0;
+
     function showNotification(message, type) {
       const notification = document.getElementById('notification');
       notification.textContent = message;
@@ -93,21 +88,36 @@
       notification.style.display = 'block';
     }
 
-    let isSubmitting = false;
+    function resetForm() {
+      document.getElementById('btnCadastrar').disabled = false;
+      document.getElementById('loader').style.display = 'none';
+      isSubmitting = false;
+    }
+
+    function canSubmitAgain() {
+      const now = Date.now();
+      if (now - lastSubmitTime < 5000) return false;
+      lastSubmitTime = now;
+      return true;
+    }
 
     async function cadastrar() {
-      if (isSubmitting) return;
+      if (isSubmitting || !canSubmitAgain()) {
+        showNotification("Aguarde alguns segundos antes de tentar novamente.", "error");
+        return;
+      }
 
-      const btn = document.getElementById('btnCadastrar');
-      const loader = document.getElementById('loader');
-      btn.disabled = true;
-      loader.style.display = 'block';
       isSubmitting = true;
 
       const nome = document.getElementById('nome').value.trim();
       const email = document.getElementById('email').value.trim();
       const senha = document.getElementById('senha').value.trim();
       const confirmarSenha = document.getElementById('confirmarSenha').value.trim();
+      const btn = document.getElementById('btnCadastrar');
+      const loader = document.getElementById('loader');
+
+      btn.disabled = true;
+      loader.style.display = 'block';
 
       if (!nome || !email || !senha || !confirmarSenha) {
         showNotification('Por favor, preencha todos os campos.', 'error');
@@ -122,35 +132,32 @@
       }
 
       try {
-        console.log("Enviando dados para o backend...");
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Delay
 
-        const response = await fetch('http://localhost:3000/cadastrar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome, email, senha })
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password: senha,
+          options: {
+            data: { nome }
+          }
         });
 
-        const result = await response.json();
-        console.log("Resposta do backend:", result);
-
-        if (!response.ok) {
-          // Aqui tratamos os erros vindos do backend
-          if (result.error && result.error.includes('already been registered')) {
+        if (error) {
+          if (error.message.includes('already registered')) {
             showNotification('E-mail já cadastrado. Faça login ou use outro e-mail.', 'error');
-          } else if (result.error) {
-            showNotification('Erro no cadastro: ' + result.error, 'error');
+          } else if (error.status === 429) {
+            showNotification('Muitas tentativas. Tente novamente em alguns segundos.', 'error');
           } else {
-            showNotification('Erro inesperado no cadastro.', 'error');
+            showNotification('Erro no cadastro: ' + error.message, 'error');
           }
           resetForm();
           return;
         }
 
-        // Sucesso:
-        showNotification('Usuário cadastrado com sucesso! Verifique seu e-mail para confirmar a conta.', 'success');
+        showNotification('Usuário cadastrado com sucesso! Verifique seu e-mail.', 'success');
         setTimeout(() => {
           window.location.href = 'login.html';
-        }, 5000);
+        }, 3000);
       } catch (err) {
         console.error("Erro inesperado:", err);
         showNotification('Erro inesperado: ' + err.message, 'error');
@@ -159,15 +166,20 @@
       }
     }
 
-    function resetForm() {
-      const btn = document.getElementById('btnCadastrar');
-      const loader = document.getElementById('loader');
-      btn.disabled = false;
-      loader.style.display = 'none';
-      isSubmitting = false;
+    async function loginComGoogle() {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google'
+      });
+      if (error) {
+        showNotification('Erro ao entrar com Google: ' + error.message, 'error');
+      }
     }
 
-    document.getElementById('btnCadastrar').addEventListener('click', cadastrar);
+    document.getElementById('btnCadastrar').addEventListener('click', () => {
+      if (!isSubmitting) cadastrar();
+    });
+
+    document.getElementById('btnGoogle').addEventListener('click', loginComGoogle);
   </script>
 </body>
 </html>

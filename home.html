@@ -34,7 +34,6 @@
       background-color: #0f67d1;
     }
 
-    /* Modal */
     #modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -74,6 +73,7 @@
   <header>
     <img id="logo" src="img/logo.png" alt="Logo Lava-Car" />
     <h1>Bem-vindo ao TownPark</h1>
+    <h2 id="userNome"></h2>
   </header>
 
   <main>
@@ -84,7 +84,7 @@
     <button id="btnSair">Sair</button>
   </main>
 
-  <!-- Modal para mensagens -->
+  <!-- Modal -->
   <div id="modal">
     <div class="modal-content">
       <div id="modalMensagem"></div>
@@ -92,18 +92,14 @@
     </div>
   </div>
 
-  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Script principal -->
   <script>
-    // Inicializa o Supabase
     const supabase = window.supabase.createClient(
       'https://kiqvzarmwooveklezzfm.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
     );
 
-    // Função para mostrar modal com mensagem
     function mostrarModal(mensagem) {
       const modal = document.getElementById('modal');
       const msg = document.getElementById('modalMensagem');
@@ -111,22 +107,45 @@
       modal.style.display = 'flex';
     }
 
-    // Função para fechar modal
     function fecharModal() {
       document.getElementById('modal').style.display = 'none';
     }
 
-    // Verifica sessão do usuário, redireciona para login se não estiver logado
     async function verificarSessao() {
       const { data, error } = await supabase.auth.getUser();
       if (!data?.user || error) {
         window.location.href = 'index.html';
       } else {
-        console.log("Usuário logado:", data.user.id);
+        const user = data.user;
+        const nome = user.user_metadata?.full_name || user.user_metadata?.name || 'Usuário';
+        const email = user.email;
+
+        console.log("Usuário logado:", nome, email);
+
+        document.getElementById('userNome').textContent = `Olá, ${nome}!`;
+
+        await salvarUsuarioSeNovo(user);
       }
     }
 
-    // Verifica se usuário é admin consultando a coluna "role"
+    async function salvarUsuarioSeNovo(user) {
+      const { data: existe, error } = await supabase
+        .from('usuarios')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!existe && !error) {
+        await supabase.from('usuarios').insert({
+          id: user.id,
+          nome: user.user_metadata?.full_name || user.user_metadata?.name || '',
+          email: user.email,
+          role: 'usuario'
+        });
+        console.log("Usuário cadastrado na tabela 'usuarios'.");
+      }
+    }
+
     async function verificarSeAdmin() {
       const { data: userData, error: authError } = await supabase.auth.getUser();
       if (authError || !userData?.user) return false;
@@ -156,7 +175,6 @@
       }
     }
 
-    // Evento ao carregar a página
     window.addEventListener('DOMContentLoaded', () => {
       verificarSessao();
 
