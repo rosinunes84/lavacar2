@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cadastro - LavaCar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #007BFF, #00BFFF);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background: #fff;
+      padding: 30px 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      color: #333;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    input {
+      border: 1px solid #ddd;
+    }
+    input:focus {
+      border-color: #007BFF;
+      outline: none;
+    }
+    button {
+      background: #007BFF;
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+    #loader { display: none; margin-top: 10px; }
+    .notification {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+      font-size: 14px;
+    }
+    .notification.success { background: #d4edda; color: #155724; }
+    .notification.error { background: #f8d7da; color: #721c24; }
+    p { margin-top: 15px; font-size: 14px; }
+    p a { color: #007BFF; text-decoration: none; }
+    p a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Cadastro</h1>
+
+    <input type="text" id="nome" placeholder="Nome completo" />
+    <input type="email" id="email" placeholder="E-mail" />
+    <input type="password" id="senha" placeholder="Senha" />
+    <input type="password" id="confirmarSenha" placeholder="Confirmar senha" />
+
+    <button id="btnCadastrar">Cadastrar</button>
+
+    <div id="loader">Processando...</div>
+    <div id="notification" class="notification"></div>
+
+    <p>Já tem conta? <a href="index.html">Login</a></p>
+  </div>
+
+  <script>
+    function showNotification(message, type) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = `notification ${type}`;
+      notification.style.display = 'block';
+    }
+
+    let isSubmitting = false;
+
+    async function cadastrar() {
+      if (isSubmitting) return;
+
+      const btn = document.getElementById('btnCadastrar');
+      const loader = document.getElementById('loader');
+      btn.disabled = true;
+      loader.style.display = 'block';
+      isSubmitting = true;
+
+      const nome = document.getElementById('nome').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('senha').value.trim();
+      const confirmarSenha = document.getElementById('confirmarSenha').value.trim();
+
+      if (!nome || !email || !senha || !confirmarSenha) {
+        showNotification('Por favor, preencha todos os campos.', 'error');
+        resetForm();
+        return;
+      }
+
+      if (senha !== confirmarSenha) {
+        showNotification('As senhas não coincidem.', 'error');
+        resetForm();
+        return;
+      }
+
+      try {
+        console.log("Enviando dados para o backend...");
+
+        const response = await fetch('http://localhost:3000/cadastrar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, email, senha })
+        });
+
+        const result = await response.json();
+        console.log("Resposta do backend:", result);
+
+        if (!response.ok) {
+          // Aqui tratamos os erros vindos do backend
+          if (result.error && result.error.includes('already been registered')) {
+            showNotification('E-mail já cadastrado. Faça login ou use outro e-mail.', 'error');
+          } else if (result.error) {
+            showNotification('Erro no cadastro: ' + result.error, 'error');
+          } else {
+            showNotification('Erro inesperado no cadastro.', 'error');
+          }
+          resetForm();
+          return;
+        }
+
+        // Sucesso:
+        showNotification('Usuário cadastrado com sucesso! Verifique seu e-mail para confirmar a conta.', 'success');
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 5000);
+      } catch (err) {
+        console.error("Erro inesperado:", err);
+        showNotification('Erro inesperado: ' + err.message, 'error');
+      } finally {
+        resetForm();
+      }
+    }
+
+    function resetForm() {
+      const btn = document.getElementById('btnCadastrar');
+      const loader = document.getElementById('loader');
+      btn.disabled = false;
+      loader.style.display = 'none';
+      isSubmitting = false;
+    }
+
+    document.getElementById('btnCadastrar').addEventListener('click', cadastrar);
+  </script>
+</body>
+</html>

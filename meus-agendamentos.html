@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meus Agendamentos - Lava-Car</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #eee;
+      padding: 2rem;
+      margin: 0;
+    }
+    h1 {
+      color: #1e90ff;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .btn-container {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background-color: #1e90ff;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      text-align: center;
+      text-decoration: none;
+      transition: background-color 0.3s;
+      min-width: 140px;
+    }
+    .btn:hover {
+      background-color: #0f67d1;
+    }
+    .agendamento-item {
+      background-color: #1e1e1e;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+      transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+    .agendamento-item:hover {
+      transform: translateY(-2px);
+    }
+    .acoes {
+      margin-top: 1rem;
+      display: flex;
+      gap: 1rem;
+    }
+    .btn-pequeno {
+      background-color: #28a745;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      min-width: auto;
+    }
+    .btn-pequeno.excluir {
+      background-color: #dc3545;
+    }
+    .btn-pequeno:hover.excluir {
+      background-color: #a71d2a;
+    }
+    .btn-pequeno:hover {
+      background-color: #1e7e34;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #333;
+      margin: 0.5rem 0;
+    }
+    @media(max-width: 500px) {
+      .btn-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .btn {
+        width: 100%;
+        max-width: 300px;
+      }
+      .acoes {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Meus Agendamentos</h1>
+
+  <div class="btn-container">
+    <button id="btn-home" class="btn">Home</button>
+    <button id="btn-novo" class="btn">Novo Agendamento</button>
+    <button id="btn-atualizar" class="btn">Atualizar</button>
+    <button id="btn-sair" class="btn">Sair</button>
+  </div>
+
+  <div id="listaAgendamentos">
+    <p>Carregando agendamentos...</p>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    let usuarioID = null;
+
+    async function verificarSessao() {
+      const { data, error } = await supabase.auth.getUser();
+
+      if (error || !data.user) {
+        window.location.href = "index.html";
+        return;
+      }
+      usuarioID = data.user.id;
+      carregarAgendamentos();
+    }
+
+    async function carregarAgendamentos() {
+      if (!usuarioID) return;
+
+      const lista = document.getElementById("listaAgendamentos");
+      lista.innerHTML = '<p>Carregando agendamentos...</p>';
+
+      const { data, error } = await supabase
+        .from('agendamentos')
+        .select('id, data, periodo, status, observacoes, servico:servico_id (nome)')
+        .eq('usuario_id', usuarioID)
+        .order('data', { ascending: true });
+
+      lista.innerHTML = '';
+
+      if (error) {
+        lista.innerHTML = `<p>Erro ao carregar agendamentos: ${error.message}</p>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        lista.innerHTML = "<p>Nenhum agendamento encontrado.</p>";
+        return;
+      }
+
+      data.forEach(agendamento => {
+        const nomeServico = agendamento.servico ? agendamento.servico.nome : 'Serviço não informado';
+
+        const dataObj = new Date(agendamento.data + 'T00:00:00');
+        const dataFormatada = dataObj.toLocaleDateString('pt-BR');
+
+        const item = document.createElement("div");
+        item.className = "agendamento-item";
+        item.innerHTML = `
+          <p><strong>Data:</strong> ${dataFormatada}</p>
+          <p><strong>Período:</strong> ${agendamento.periodo}</p>
+          <p><strong>Serviço:</strong> ${nomeServico}</p>
+          <p><strong>Status:</strong> ${agendamento.status}</p>
+          <p><strong>Observações:</strong> ${agendamento.observacoes || 'Nenhuma'}</p>
+          <div class="acoes">
+            <button class="btn-pequeno editar">Editar</button>
+            <button class="btn-pequeno excluir">Excluir</button>
+          </div>
+          <hr>
+        `;
+
+        item.querySelector('.editar').addEventListener('click', () => {
+          window.location.href = `editar-agendamento.html?id=${agendamento.id}`;
+        });
+
+        item.querySelector('.excluir').addEventListener('click', async () => {
+          if (confirm('Tem certeza que deseja excluir este agendamento?')) {
+            const { error } = await supabase
+              .from('agendamentos')
+              .delete()
+              .eq('id', agendamento.id);
+
+            if (error) {
+              alert('Erro ao excluir agendamento: ' + error.message);
+            } else {
+              alert('Agendamento excluído com sucesso!');
+              carregarAgendamentos();
+            }
+          }
+        });
+
+        lista.appendChild(item);
+      });
+    }
+
+    async function sair() {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    }
+
+    function irHome() {
+      window.location.href = "home.html";
+    }
+
+    function novoAgendamento() {
+      window.location.href = "agendar.html";
+    }
+
+    document.getElementById('btn-home').addEventListener('click', irHome);
+    document.getElementById('btn-novo').addEventListener('click', novoAgendamento);
+    document.getElementById('btn-atualizar').addEventListener('click', carregarAgendamentos);
+    document.getElementById('btn-sair').addEventListener('click', sair);
+
+    verificarSessao();
+  </script>
+
+</body>
+</html>

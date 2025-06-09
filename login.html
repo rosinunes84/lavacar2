@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #3366ff 0%, #6699ff 100%);
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #333;
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+      width: 360px;
+      text-align: center;
+    }
+
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .logo-container img {
+      width: 120px;
+      height: auto;
+      margin-bottom: 12px;
+    }
+
+    .logo-container h2 {
+      margin: 0;
+      font-weight: 700;
+      color: #264d99;
+      font-size: 1.5rem;
+    }
+
+    h1 {
+      margin-bottom: 24px;
+      font-weight: 700;
+      color: #264d99;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 12px;
+      margin: 10px 0;
+      border: 1.5px solid #3366ff;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #264d99;
+      box-shadow: 0 0 8px rgba(38, 77, 153, 0.6);
+    }
+
+    button {
+      margin-top: 20px;
+      background-color: #3366ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 14px 0;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.3s ease;
+      position: relative;
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .loader {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #fff;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      animation: spin 1s linear infinite;
+      display: none;
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    @keyframes spin {
+      0% { transform: translateY(-50%) rotate(0deg); }
+      100% { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    .link-home {
+      display: inline-block;
+      margin-top: 18px;
+      color: #3366ff;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .link-home:hover {
+      color: #264d99;
+    }
+
+    .notification {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="logo-container">
+      <img src="img/logo.png" alt="Logo" />
+    </div>
+
+    <h1>Login</h1>
+
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="senha" placeholder="Senha" required />
+
+    <button id="btnLogin">
+      Entrar
+      <div class="loader" id="loader"></div>
+    </button>
+
+    <div id="notification" class="notification"></div>
+
+    <a href="signup.html" class="link-home">→ Criar uma conta</a>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      'https://kiqvzarmwooveklezzfm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+    );
+
+    function showNotification(message, type) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = `notification ${type}`;
+      notification.style.display = 'block';
+    }
+
+    async function login() {
+      const btn = document.getElementById('btnLogin');
+      const loader = document.getElementById('loader');
+      btn.disabled = true;
+      loader.style.display = 'inline-block';
+
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('senha').value.trim();
+
+      if (!email || !senha) {
+        showNotification('Por favor, preencha todos os campos.', 'error');
+        btn.disabled = false;
+        loader.style.display = 'none';
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password: senha
+        });
+
+        if (error) {
+          showNotification('Erro ao fazer login: ' + error.message, 'error');
+        } else if (!data.user?.confirmed_at) {
+          showNotification('Por favor, confirme seu e-mail antes de acessar.', 'error');
+          await supabase.auth.signOut();
+        } else {
+          showNotification('Login realizado com sucesso!', 'success');
+          setTimeout(() => {
+            window.location.href = 'home.html';
+          }, 1500);
+        }
+      } catch (err) {
+        showNotification('Erro inesperado: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        loader.style.display = 'none';
+      }
+    }
+
+    document.getElementById('btnLogin').addEventListener('click', login);
+  </script>
+</body>
+</html>

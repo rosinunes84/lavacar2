@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="google" content="notranslate">
+  <title>Bem-vindo | TownPark</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1e90ff;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      font-size: clamp(1.5rem, 5vw, 2rem); /* responsivo: entre 1.5rem e 2rem */
+    }
+
+    button {
+      background: white;
+      color: #1e90ff;
+      border: none;
+      padding: 12px 24px;
+      margin: 10px;
+      border-radius: 8px;
+      font-size: clamp(0.9rem, 4vw, 1rem); /* responsivo: entre 0.9rem e 1rem */
+      cursor: pointer;
+      transition: background 0.3s ease;
+      width: 100%;
+      max-width: 250px;
+    }
+
+    button:hover {
+      background: #f0f0f0;
+    }
+
+    .logo {
+      margin-bottom: 20px;
+    }
+
+    img {
+      width: 120px; /* um pouco menor para melhor responsividade */
+      height: auto;
+      max-width: 100%;
+    }
+  </style>
+</head>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="img/logo.png" sizes="192x192" type="image/png">
+<meta name="theme-color" content="#2563eb">
+
+<body>
+  <div class="logo">
+    <img src="img/logo.png" alt="Logo do Lava-Car">
+  </div>
+
+  <h1>Bem-vindo ao TownPark</h1>
+  <button id="btn-entrar">Entrar</button>
+  <button id="btn-cadastrar">Cadastrar</button>
+
+  <script>
+    document.getElementById("btn-entrar").onclick = () => {
+      window.location.href = "login.html";
+    };
+    document.getElementById("btn-cadastrar").onclick = () => {
+      window.location.href = "signup.html";
+    };
+  </script>
+
+  <script type="module" src="js/admin_dashboard.js"></script>
+</body>
+</html>

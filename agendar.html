@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agendar Serviço - Lava-Car</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #eee;
+      padding: 2rem;
+      max-width: 480px;
+      margin: auto;
+    }
+    .home-button {
+      background-color: #1e90ff;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-block;
+      margin: 1rem 0;
+    }
+    .home-button:hover {
+      background-color: #0f67d1;
+    }
+    h1 {
+      color: #1e90ff;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    input, select, button, textarea {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.4rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+    }
+    input, select, textarea {
+      background-color: #222;
+      color: #eee;
+    }
+    button {
+      background-color: #1e90ff;
+      color: white;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #0f67d1;
+    }
+    #notificacao {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-weight: bold;
+      display: none;
+    }
+    #notificacao.sucesso {
+      background-color: #28a745;
+      color: white;
+    }
+    #notificacao.erro {
+      background-color: #dc3545;
+      color: white;
+    }
+    #vagas-restantes {
+      margin-top: 10px;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Agendar Serviço</h1>
+
+  <div style="text-align: center;">
+    <a href="home.html" class="home-button">Home</a>
+  </div>
+
+  <div id="vagas-restantes">Selecione data e período para ver vagas.</div>
+
+  <form id="formAgendamento">
+    <label for="data">Data</label>
+    <input type="date" id="data" name="data" required />
+
+    <label for="periodo">Período</label>
+    <select id="periodo" name="periodo" required>
+      <option value="">Selecione</option>
+      <option value="Manhã">Manhã (deixar até as 9:00hrs)</option>
+      <option value="Tarde">Tarde (deixar até as 13:00hrs)</option>
+    </select>
+
+    <label for="tipoServico">Serviço</label>
+    <select id="tipoServico" name="tipoServico" required>
+      <option value="">Carregando serviços...</option>
+    </select>
+
+    <label for="veiculo">Veículo (opcional)</label>
+    <input type="text" id="veiculo" name="veiculo" placeholder="Ex: Carro, Moto..." />
+
+    <label for="observacoes">Observações (opcional)</label>
+    <textarea id="observacoes" name="observacoes" rows="4" placeholder="Ex: Prefiro que use cera especial..."></textarea>
+
+    <div id="notificacao"></div>
+
+    <button type="submit" id="btnAgendar">Agendar</button>
+  </form>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      'https://kiqvzarmwooveklezzfm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+    );
+
+    const vagasRestantesDiv = document.getElementById('vagas-restantes');
+
+    function mostrarNotificacao(mensagem, tipo) {
+      const div = document.getElementById('notificacao');
+      div.textContent = mensagem;
+      div.className = tipo;
+      div.style.display = 'block';
+      setTimeout(() => { div.style.display = 'none'; }, 10000);
+    }
+
+    async function verificarSessao() {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        alert("Usuário não autenticado. Faça login para continuar.");
+        window.location.href = 'index.html';
+      } else {
+        carregarServicos();
+      }
+    }
+
+    async function carregarServicos() {
+      const select = document.getElementById('tipoServico');
+      select.innerHTML = '<option value="">Carregando serviços...</option>';
+      const { data: servicos, error } = await supabase.from('servicos').select('id, nome').order('nome');
+      if (error) {
+        select.innerHTML = '<option value="">Erro ao carregar serviços</option>';
+        return;
+      }
+      select.innerHTML = '<option value="">Selecione</option>';
+      servicos.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.nome;
+        select.appendChild(opt);
+      });
+    }
+
+    function formatarData(dataISO) {
+      const [ano, mes, dia] = dataISO.split('-');
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    async function verificarDiaBloqueado(data) {
+      const { data: bloqueios } = await supabase.from('dias_bloqueados').select('*').eq('data', data);
+      return bloqueios.length > 0;
+    }
+
+    async function verificarLimiteAgendamentos(data, periodo) {
+      const { data: config } = await supabase.from('quantidades_periodos').select('quantidade').eq('periodo', periodo).single();
+      const quantidadeMaxima = config ? config.quantidade : 1;
+
+      const { count } = await supabase
+        .from('agendamentos')
+        .select('*', { count: 'exact', head: true })
+        .eq('data', data)
+        .eq('periodo', periodo);
+
+      return { atingiuLimite: count >= quantidadeMaxima, restantes: quantidadeMaxima - count };
+    }
+
+    async function atualizarVagasRestantes() {
+      const data = document.getElementById('data').value;
+      const periodo = document.getElementById('periodo').value;
+
+      if (!data || !periodo) {
+        vagasRestantesDiv.textContent = 'Selecione data e período para ver vagas.';
+        return;
+      }
+
+      const { atingiuLimite, restantes } = await verificarLimiteAgendamentos(data, periodo);
+      if (atingiuLimite) {
+        vagasRestantesDiv.textContent = 'Não há vagas restantes para esse período.';
+        vagasRestantesDiv.style.color = '#dc3545';
+      } else {
+        vagasRestantesDiv.textContent = `Vagas restantes: ${restantes}`;
+        vagasRestantesDiv.style.color = '#28a745';
+      }
+    }
+
+    document.getElementById('data').addEventListener('change', atualizarVagasRestantes);
+    document.getElementById('periodo').addEventListener('change', atualizarVagasRestantes);
+
+    document.getElementById('formAgendamento').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnAgendar');
+      btn.disabled = true;
+      btn.textContent = 'Agendando...';
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("Usuário não autenticado.");
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const dataAgendamento = document.getElementById('data').value;
+      const periodo = document.getElementById('periodo').value;
+      const servico_id = document.getElementById('tipoServico').value;
+      const veiculo = document.getElementById('veiculo').value || 'Não informado';
+      const observacoes = document.getElementById('observacoes').value || null;
+
+      if (!dataAgendamento || !periodo || !servico_id) {
+        mostrarNotificacao('Por favor, preencha todos os campos obrigatórios.', 'erro');
+        btn.disabled = false;
+        btn.textContent = 'Agendar';
+        return;
+      }
+
+      if (await verificarDiaBloqueado(dataAgendamento)) {
+        mostrarNotificacao('Desculpe, escolha outra data. Estamos sem horário para esse dia!', 'erro');
+        btn.disabled = false;
+        btn.textContent = 'Agendar';
+        return;
+      }
+
+      const { atingiuLimite } = await verificarLimiteAgendamentos(dataAgendamento, periodo);
+      if (atingiuLimite) {
+        mostrarNotificacao('Limite de agendamentos atingido para este período. Escolha outro.', 'erro');
+        btn.disabled = false;
+        btn.textContent = 'Agendar';
+        return;
+      }
+
+      const { data: servicoData } = await supabase.from('servicos').select('nome').eq('id', servico_id).single();
+      const servico_nome = servicoData ? servicoData.nome : 'Desconhecido';
+
+      const dados = {
+        usuario_id: user.id,
+        data: dataAgendamento,
+        periodo,
+        servico_id,
+        veiculo,
+        observacoes,
+        status: "Pendente"
+      };
+
+      const { error } = await supabase.from('agendamentos').insert([dados]);
+      if (error) {
+        mostrarNotificacao('Erro ao agendar: ' + error.message, 'erro');
+      } else {
+        mostrarNotificacao('Agendamento realizado com sucesso!', 'sucesso');
+        const usuario_nome = user.user_metadata?.full_name || user.email || 'Usuário';
+
+        emailjs.send("service_n2fghu7", "template_eioflwb", {
+          usuario_nome,
+          servico_nome,
+          data: formatarData(dataAgendamento),
+          periodo,
+          veiculo
+        }).then(resp => console.log('Email enviado!', resp))
+          .catch(err => console.error('Erro email:', err));
+
+        setTimeout(() => window.location.href = 'meus-agendamentos.html', 2000);
+      }
+      btn.disabled = false;
+      btn.textContent = 'Agendar';
+    });
+
+    verificarSessao();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script>
+    emailjs.init("VNibsiGcVU9oTIwE8");
+  </script>
+
+</body>
+</html>

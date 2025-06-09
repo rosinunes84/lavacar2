@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Perfil do Usuário</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .perfil-container {
+      background-color: white;
+      padding: 30px;
+      max-width: 400px;
+      margin: 40px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .info {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #3366ff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #264d99;
+    }
+
+    .home-button {
+      display: inline-block;
+      margin-bottom: 20px;
+      text-decoration: none;
+      background-color: #3366ff;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .home-button:hover {
+      background-color: #264d99;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Meu Perfil</h1>
+  <a href="home.html" class="home-button">🏠 Home</a>
+
+  <div id="perfil-container" class="perfil-container">
+    <p><strong>Nome:</strong> <span id="nome">Carregando...</span></p>
+    <p><strong>Email:</strong> <span id="email">Carregando...</span></p>
+    <p><strong>Função:</strong> <span id="role">Carregando...</span></p>
+
+    <button id="logout">Sair</button>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      'https://kiqvzarmwooveklezzfm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+    );
+
+    async function carregarPerfil() {
+      const { data, error: userError } = await supabase.auth.getUser();
+
+      if (userError || !data?.user) {
+        alert('Você precisa estar logado.');
+        window.location.replace('login.html');
+        return;
+      }
+
+      const user = data.user;
+      document.getElementById('email').textContent = user.email;
+
+      const { data: perfil, error } = await supabase
+        .from('usuarios')
+        .select('nome, role')
+        .eq('id', user.id)
+        .single();
+
+      if (error || !perfil) {
+        console.error('Erro ao buscar dados do usuário:', error);
+        document.getElementById('nome').textContent = 'Desconhecido';
+        document.getElementById('role').textContent = 'Desconhecida';
+      } else {
+        document.getElementById('nome').textContent = perfil.nome || 'Não informado';
+        document.getElementById('role').textContent = perfil.role || 'Não definida';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarPerfil();
+
+      document.getElementById('logout').addEventListener('click', async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          alert('Erro ao sair: ' + error.message);
+        } else {
+          window.location.replace('login.html');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

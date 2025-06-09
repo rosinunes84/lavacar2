@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gerenciar Serviços</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="dashboard-body">
+  <header class="dashboard-header">
+    <h1 class="titulo-dashboard">Gerenciar Serviços</h1>
+    <button onclick="window.location.href='admin_dashboard.html'" class="voltar-btn">Voltar</button>
+  </header>
+
+  <section class="form-servico">
+    <label for="nomeServico">Nome do Serviço</label>
+    <input type="text" id="nomeServico" placeholder="Nome do Serviço" required />
+
+    <button id="btnAdicionarServico">Adicionar Serviço</button>
+  </section>
+
+  <main class="tabela-container">
+    <table class="tabela-agendamentos">
+      <thead>
+        <tr>
+          <th>Serviço</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="listaServicos"></tbody>
+    </table>
+  </main>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'; // sua chave
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const nomeServicoInput = document.getElementById('nomeServico');
+    const btnAdicionar = document.getElementById('btnAdicionarServico');
+    const listaServicos = document.getElementById('listaServicos');
+
+    async function carregarServicos() {
+      const { data, error } = await supabase
+        .from('servicos')
+        .select('*');
+
+      if (error) {
+        console.error('Erro ao carregar serviços:', error.message);
+        return;
+      }
+
+      listaServicos.innerHTML = '';
+
+      data.forEach(servico => {
+        const tr = document.createElement('tr');
+
+        const tdNome = document.createElement('td');
+        tdNome.textContent = servico.nome;
+
+        const tdAcoes = document.createElement('td');
+
+        const btnEditar = document.createElement('button');
+        btnEditar.textContent = 'Editar';
+        btnEditar.onclick = () => editarServico(servico.id, servico.nome);
+
+        const btnExcluir = document.createElement('button');
+        btnExcluir.textContent = 'Excluir';
+        btnExcluir.onclick = () => excluirServico(servico.id);
+
+        tdAcoes.appendChild(btnEditar);
+        tdAcoes.appendChild(btnExcluir);
+
+        tr.appendChild(tdNome);
+        tr.appendChild(tdAcoes);
+
+        listaServicos.appendChild(tr);
+      });
+    }
+
+    btnAdicionar.addEventListener('click', async () => {
+      const nome = nomeServicoInput.value.trim();
+      if (!nome) {
+        alert('Informe o nome do serviço.');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('servicos')
+        .insert([{ nome }]);
+
+      if (error) {
+        console.error('Erro ao adicionar serviço:', error.message);
+        return;
+      }
+
+      nomeServicoInput.value = '';
+      carregarServicos();
+    });
+
+    async function editarServico(id, nomeAtual) {
+      const novoNome = prompt('Editar nome do serviço:', nomeAtual);
+      if (novoNome && novoNome.trim() !== '') {
+        const { error } = await supabase
+          .from('servicos')
+          .update({ nome: novoNome })
+          .eq('id', id);
+
+        if (error) {
+          console.error('Erro ao editar serviço:', error.message);
+          return;
+        }
+
+        carregarServicos();
+      }
+    }
+
+    async function excluirServico(id) {
+      if (confirm('Tem certeza que deseja excluir este serviço?')) {
+        const { error } = await supabase
+          .from('servicos')
+          .delete()
+          .eq('id', id);
+
+        if (error) {
+          console.error('Erro ao excluir serviço:', error.message);
+          return;
+        }
+
+        carregarServicos();
+      }
+    }
+
+    carregarServicos();
+  </script>
+</body>
+</html>

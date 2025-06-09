@@ -1,0 +1,864 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  max-width: 500px;
+  margin: auto;
+  background: #f5f5f5;
+}
+
+h2 {
+  text-align: center;
+}
+
+form, input, select, button {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background-color: #2b8a3e;
+  color: white;
+  cursor: pointer;
+  border: none;
+}
+
+button:hover {
+  background-color: #237133;
+}
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+h1 {
+  color: #2c3e50;
+}
+
+#lista-agendamentos {
+  margin-top: 20px;
+}
+
+.agendamento {
+  background: #ffffff;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.agendamento strong {
+  color: #34495e;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 10px 0;
+}
+
+#contador-hoje, #contador-amanha {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+  color: #16a085;
+}
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 15% auto;
+  padding: 20px;
+  width: 300px;
+  border-radius: 8px;
+}
+
+.close {
+  float: right;
+  font-size: 24px;
+  cursor: pointer;
+}
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+button {
+  margin: 5px;
+  padding: 5px 10px;
+}
+
+.modal {
+  display: none; 
+  position: fixed;
+  z-index: 1;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 15% auto;
+  padding: 20px;
+  width: 300px;
+  text-align: center;
+}
+
+.close-btn {
+  float: right;
+  cursor: pointer;
+}
+/* ====== Estilo para Gerenciar Serviços ====== */
+
+.dashboard-body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f7fa;
+  padding: 20px;
+  color: #333;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.titulo-dashboard {
+  font-size: 2rem;
+  color: #222;
+}
+
+.voltar-btn {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.voltar-btn:hover {
+  background-color: #357ABD;
+}
+
+/* Form de adicionar serviço */
+
+.form-servico {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.form-servico input[type="text"],
+.form-servico input[type="number"] {
+  padding: 10px 14px;
+  font-size: 1rem;
+  border: 1.8px solid #ccc;
+  border-radius: 8px;
+  width: 220px;
+  transition: border-color 0.3s ease;
+}
+
+.form-servico input[type="text"]:focus,
+.form-servico input[type="number"]:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+
+#btnAdicionarServico {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  min-width: 140px;
+}
+
+#btnAdicionarServico:hover:not(:disabled) {
+  background-color: #1e874b;
+}
+
+#btnAdicionarServico:disabled {
+  background-color: #95c9a3;
+  cursor: not-allowed;
+}
+
+/* Tabela */
+
+.tabela-container {
+  overflow-x: auto;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.1);
+  background: white;
+  padding: 15px;
+}
+
+.tabela-agendamentos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+  color: #444;
+}
+
+.tabela-agendamentos thead {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.tabela-agendamentos th,
+.tabela-agendamentos td {
+  padding: 12px 18px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.tabela-agendamentos tbody tr:hover {
+  background-color: #f1f7ff;
+}
+
+/* Botões da tabela */
+
+.tabela-agendamentos button {
+  padding: 6px 12px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.25s ease;
+  font-size: 0.9rem;
+}
+
+.btn-editar {
+  background-color: #f39c12;
+  color: white;
+}
+
+.btn-editar:hover {
+  background-color: #c87f0a;
+}
+
+.btn-excluir {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.btn-excluir:hover {
+  background-color: #b93a2a;
+}
+
+.btn-salvar {
+  background-color: #27ae60;
+  color: white;
+}
+
+.btn-salvar:hover {
+  background-color: #1e874b;
+}
+
+.btn-cancelar {
+  background-color: #7f8c8d;
+  color: white;
+}
+
+.btn-cancelar:hover {
+  background-color: #5c6a6b;
+}
+
+/* Inputs inline na tabela */
+
+.input-edit-nome,
+.input-edit-preco {
+  width: 90%;
+  padding: 6px 8px;
+  font-size: 1rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+}
+
+.input-edit-nome:focus,
+.input-edit-preco:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background: #f9f9f9;
+}
+
+h1 {
+  color: #333;
+}
+
+.filtros, .acoes {
+  margin-bottom: 20px;
+}
+
+.filtros label {
+  margin-right: 10px;
+}
+
+.tabela-agendamentos {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.tabela-agendamentos th, .tabela-agendamentos td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.tabela-agendamentos th {
+  background: #f0f0f0;
+}
+
+.btn {
+  display: inline-block;
+  padding: 8px 12px;
+  background: #007bff;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.btn:hover {
+  background: #0056b3;
+}
+/* styles.css */
+
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background-color: #f4f6f8;
+  color: #333;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.filtros, .acoes {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.filtros label {
+  font-weight: 600;
+}
+
+.filtros input[type="date"],
+.filtros select {
+  padding: 6px 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.filtros button {
+  background-color: #007BFF;
+  border: none;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.filtros button:hover {
+  background-color: #0056b3;
+}
+
+.acoes .btn {
+  background-color: #28a745;
+  color: white;
+  padding: 8px 15px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.acoes .btn:hover {
+  background-color: #1e7e34;
+}
+
+.tabela-agendamentos {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.tabela-agendamentos th,
+.tabela-agendamentos td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.tabela-agendamentos th {
+  background-color: #007BFF;
+  color: white;
+  font-weight: 600;
+  user-select: none;
+}
+
+.tabela-agendamentos tbody tr:hover {
+  background-color: #f1faff;
+}
+
+select {
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.usuario-logado {
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+.notificacao {
+  display: none;
+  padding: 10px;
+  margin-top: 15px;
+  color: white;
+  border-radius: 5px;
+  font-weight: bold;
+}
+.notificacao {
+  display: none;
+  padding: 10px;
+  margin-top: 15px;
+  color: white;
+  border-radius: 5px;
+  font-weight: bold;
+}
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 50px auto;
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+.contador {
+  margin: 20px 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #555;
+}
+
+.agendamento, .servico, .usuario {
+  background: #fafafa;
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 8px;
+  transition: box-shadow 0.3s;
+}
+
+.agendamento:hover, .servico:hover, .usuario:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.acoes {
+  margin-top: 10px;
+}
+
+.acoes button {
+  margin-right: 10px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.btn-editar {
+  background: #007bff;
+  color: #fff;
+}
+
+.btn-editar:hover {
+  background: #0056b3;
+}
+
+.btn-excluir {
+  background: #dc3545;
+  color: #fff;
+}
+
+.btn-excluir:hover {
+  background: #c82333;
+}
+
+.btn-voltar {
+  display: inline-block;
+  margin-top: 20px;
+  background: #6c757d;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.3s;
+}
+
+.btn-voltar:hover {
+  background: #5a6268;
+}
+
+.btn-adicionar {
+  display: inline-block;
+  margin-bottom: 20px;
+  background: #28a745;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.3s;
+}
+
+.btn-adicionar:hover {
+  background: #218838;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+form button {
+  background: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+form button:hover {
+  background: #0056b3;
+}
+#lista-agendamentos {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.agendamento {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agendamento:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.agendamento p {
+  margin: 0.25rem 0;
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+.agendamento strong {
+  color: #111827;
+}
+
+.acoes {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.acoes button {
+  padding: 0.4rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.acoes .btn-editar {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.acoes .btn-editar:hover {
+  background-color: #2563eb;
+}
+
+.acoes .btn-excluir {
+  background-color: #ef4444;
+  color: white;
+}
+
+.acoes .btn-excluir:hover {
+  background-color: #dc2626;
+}
+#listaAgendamentos {
+  background-color: #1e1e2f;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 0 10px #0f67d1aa;
+  max-width: 900px;
+  margin: 0 auto;
+  overflow-x: auto;
+}
+
+table.agendamento-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #eee;
+  font-size: 1rem;
+}
+
+.agendamento-table thead {
+  background-color: #1e90ff;
+}
+
+.agendamento-table thead th {
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  color: white;
+}
+
+.agendamento-table tbody tr {
+  border-bottom: 1px solid #444;
+  transition: background-color 0.3s;
+}
+
+.agendamento-table tbody tr:hover {
+  background-color: #0f67d1;
+  cursor: pointer;
+}
+
+.agendamento-table tbody td {
+  padding: 12px 15px;
+  vertical-align: middle;
+}
+
+.agendamento-table tbody td .acoes {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+.agendamento-table tbody td .btn-pequeno {
+  min-width: 70px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+}
+
+.agendamento-table tbody td .btn-pequeno.editar {
+  background-color: #28a745;
+  transition: background-color 0.3s;
+}
+
+.agendamento-table tbody td .btn-pequeno.editar:hover {
+  background-color: #1e7e34;
+}
+
+.agendamento-table tbody td .btn-pequeno.excluir {
+  background-color: #dc3545;
+  transition: background-color 0.3s;
+}
+
+.agendamento-table tbody td .btn-pequeno.excluir:hover {
+  background-color: #a71d2a;
+}
+
+/* Remove margem e padding dos parágrafos dentro das células */
+.agendamento-table p {
+  margin: 0;
+  padding: 0;
+}
+#loader {
+  display: none;
+  text-align: center;
+  margin: 20px 0;
+  font-weight: bold;
+}
+
+.agendamento {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.acoes {
+  margin-top: 10px;
+}
+
+.btn-editar, .btn-excluir {
+  margin-right: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.usuario-card {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: background 0.3s, transform 0.2s;
+}
+
+.usuario-card:hover {
+  background: #f0f0f0;
+  transform: scale(1.02);
+}
+
+.btn-excluir {
+  background-color: #ff4d4f;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-excluir:hover {
+  background-color: #d9363e;
+}
+
+.loading {
+  font-style: italic;
+  color: #555;
+}
+
+.error {
+  color: red;
+}
+
+.empty {
+  color: #888;
+}
+#modal-acesso-negado {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: auto;
+  display: none;
+}
+
+#modal-acesso-negado .overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+#modal-acesso-negado .modal {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 320px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -60%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+form {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.limite {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  cursor: pointer;
+}
+

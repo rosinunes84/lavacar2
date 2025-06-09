@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirmação de E-mail</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #3366ff 0%, #6699ff 100%);
+      color: #fff;
+      text-align: center;
+      padding: 50px;
+    }
+    .container {
+      background: rgba(0,0,0,0.3);
+      padding: 30px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #fff;
+      color: #3366ff;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 id="status">Validando confirmação...</h1>
+    <p id="details">Aguarde enquanto validamos sua conta.</p>
+    <a href="login.html" style="display:none;" id="loginLink">Ir para Login</a>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+    const supabase = createClient(
+      'https://kiqvzarmwooveklezzfm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+    )
+
+    const statusEl = document.getElementById('status');
+    const detailsEl = document.getElementById('details');
+    const loginLink = document.getElementById('loginLink');
+
+    async function confirmEmail() {
+      const { error } = await supabase.auth.exchangeCodeForSession();
+
+      if (error) {
+        statusEl.textContent = 'Erro na confirmação!';
+        detailsEl.textContent = error.message;
+      } else {
+        statusEl.textContent = 'E-mail confirmado com sucesso!';
+        detailsEl.textContent = 'Sua conta foi verificada. Agora você pode fazer login.';
+        loginLink.style.display = 'inline-block';
+      }
+    }
+
+    confirmEmail();
+  </script>
+
+</body>
+</html>

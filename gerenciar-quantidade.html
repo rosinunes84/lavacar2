@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gerenciar Quantidade e Bloqueios</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    /* Container dos botões voltar e home */
+    .btn-container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .btn-nav {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 25px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.3s;
+    }
+    .btn-nav:hover {
+      background: #2980b9;
+    }
+
+    section {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #34495e;
+    }
+    select, input[type="number"], input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1.5px solid #bdc3c7;
+      border-radius: 6px;
+      box-sizing: border-box;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 20px;
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    .lista-item {
+      background: #ecf0f1;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-remover {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn-remover:hover {
+      background: #c0392b;
+    }
+    #msg-status, #msg-erro {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    #msg-status {
+      color: #155724;
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+    }
+    #msg-erro {
+      color: #721c24;
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Gerenciar Quantidade e Bloqueios</h1>
+
+<div class="btn-container">
+  <button class="btn-nav" id="btn-voltar">
+    <i class="fas fa-arrow-left"></i> Voltar
+  </button>
+  <button class="btn-nav" onclick="window.location.href='home.html'">
+    <i class="fas fa-home"></i> Home
+  </button>
+</div>
+
+<section>
+  <h2>Configurar Quantidade por Período</h2>
+  
+  <label for="select-periodo">Selecionar período</label>
+  <select id="select-periodo">
+    <option value="" disabled selected>Escolha o período</option>
+    <option value="Manhã">Manhã</option>
+    <option value="Tarde">Tarde</option>
+  </select>
+
+  <label for="input-quantidade">Quantidade máxima</label>
+  <input id="input-quantidade" type="number" min="1" placeholder="Digite a quantidade máxima" />
+
+  <button id="btn-salvar-quantidade">
+    <i class="fas fa-save"></i> Salvar Quantidade
+  </button>
+</section>
+
+<section>
+  <h2>Bloquear Dia para Agendamentos</h2>
+
+  <label for="input-data-bloqueio">Selecionar data</label>
+  <input id="input-data-bloqueio" type="date" />
+
+  <button id="btn-bloquear-dia">
+    <i class="fas fa-ban"></i> Bloquear Dia
+  </button>
+</section>
+
+<section>
+  <h2>Períodos Configurados</h2>
+  <div id="lista-periodos"></div>
+</section>
+
+<section>
+  <h2>Dias Bloqueados</h2>
+  <div id="lista-bloqueios"></div>
+</section>
+
+<div id="msg-status" style="display: none;"></div>
+<div id="msg-erro" style="display: none;"></div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+  const supabase = createClient(
+    'https://kiqvzarmwooveklezzfm.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+  )
+
+  const selectPeriodo = document.getElementById('select-periodo')
+  const inputQuantidade = document.getElementById('input-quantidade')
+  const btnSalvarQuantidade = document.getElementById('btn-salvar-quantidade')
+
+  const inputDataBloqueio = document.getElementById('input-data-bloqueio')
+  const btnBloquearDia = document.getElementById('btn-bloquear-dia')
+
+  const listaPeriodos = document.getElementById('lista-periodos')
+  const listaBloqueios = document.getElementById('lista-bloqueios')
+
+  const msgStatus = document.getElementById('msg-status')
+  const msgErro = document.getElementById('msg-erro')
+
+  function exibirStatus(msg, erro = false) {
+    msgStatus.style.display = erro ? 'none' : 'block'
+    msgErro.style.display = erro ? 'block' : 'none'
+    msgStatus.textContent = erro ? '' : msg
+    msgErro.textContent = erro ? msg : ''
+  }
+
+  async function carregarPeriodos() {
+    const { data, error } = await supabase.from('quantidades_periodos').select('*').order('periodo')
+    listaPeriodos.innerHTML = data?.length ? '' : '<p>Nenhum período configurado.</p>'
+    if (error) return exibirStatus('Erro ao carregar períodos: ' + error.message, true)
+
+    data.forEach(({ id, periodo, quantidade }) => {
+      const div = document.createElement('div')
+      div.className = 'lista-item'
+      div.innerHTML = `<span><strong>${periodo}</strong>: ${quantidade}</span>
+        <button class="btn-remover"><i class="fas fa-trash"></i></button>`
+      div.querySelector('.btn-remover').onclick = () => removerItem('quantidades_periodos', id, carregarPeriodos)
+      listaPeriodos.appendChild(div)
+    })
+  }
+
+  async function carregarBloqueios() {
+    const { data, error } = await supabase.from('dias_bloqueados').select('*').order('data')
+    listaBloqueios.innerHTML = data?.length ? '' : '<p>Nenhum dia bloqueado.</p>'
+    if (error) return exibirStatus('Erro ao carregar bloqueios: ' + error.message, true)
+
+    data.forEach(({ id, data }) => {
+      const div = document.createElement('div')
+      div.className = 'lista-item'
+      div.innerHTML = `<span>${data}</span>
+        <button class="btn-remover"><i class="fas fa-trash"></i></button>`
+      div.querySelector('.btn-remover').onclick = () => removerItem('dias_bloqueados', id, carregarBloqueios)
+      listaBloqueios.appendChild(div)
+    })
+  }
+
+  async function removerItem(tabela, id, callback) {
+    const { error } = await supabase.from(tabela).delete().eq('id', id)
+    if (error) return exibirStatus('Erro ao remover: ' + error.message, true)
+    exibirStatus('Removido com sucesso!')
+    callback()
+  }
+
+  btnSalvarQuantidade.onclick = async () => {
+    exibirStatus('')
+    const periodo = selectPeriodo.value
+    const quantidade = parseInt(inputQuantidade.value)
+
+    if (!periodo) return exibirStatus('Selecione um período.', true)
+    if (!quantidade || quantidade <= 0) return exibirStatus('Informe uma quantidade válida.', true)
+
+    const { data: existente } = await supabase.from('quantidades_periodos').select('*').eq('periodo', periodo).maybeSingle()
+    let error
+    if (existente) {
+      ({ error } = await supabase.from('quantidades_periodos').update({ quantidade }).eq('id', existente.id))
+    } else {
+      ({ error } = await supabase.from('quantidades_periodos').insert({ periodo, quantidade }))
+    }
+    if (error) return exibirStatus('Erro ao salvar: ' + error.message, true)
+
+    exibirStatus('Quantidade salva com sucesso!')
+    inputQuantidade.value = ''
+    selectPeriodo.value = ''
+    carregarPeriodos()
+  }
+
+  btnBloquearDia.onclick = async () => {
+    exibirStatus('')
+    const dataSelecionada = inputDataBloqueio.value
+    if (!dataSelecionada) return exibirStatus('Selecione uma data para bloquear.', true)
+
+    const { data: existente } = await supabase.from('dias_bloqueados').select('*').eq('data', dataSelecionada).maybeSingle()
+    if (existente) return exibirStatus('Essa data já está bloqueada.', true)
+
+    const { error } = await supabase.from('dias_bloqueados').insert({ data: dataSelecionada })
+    if (error) return exibirStatus('Erro ao bloquear data: ' + error.message, true)
+
+    exibirStatus('Data bloqueada com sucesso!')
+    inputDataBloqueio.value = ''
+    carregarBloqueios()
+  }
+
+  // Função para voltar com fallback para home.html
+  function voltarComFallback() {
+    if (history.length > 1) {
+      history.back()
+    } else {
+      window.location.href = 'home.html'
+    }
+  }
+
+  // Ativa o botão voltar com addEventListener
+  document.getElementById('btn-voltar').addEventListener('click', voltarComFallback)
+
+  // Carregar listas ao abrir a página
+  carregarPeriodos()
+  carregarBloqueios()
+</script>
+
+</body>
+</html>

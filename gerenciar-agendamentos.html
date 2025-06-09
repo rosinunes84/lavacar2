@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gerenciar Agendamentos</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f9fafb;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-align: center;
+      color: #2563eb;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      text-align: center;
+      color: #555;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-buttons a {
+      padding: 10px 20px;
+      background-color: #2563eb;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+
+    .nav-buttons a:hover {
+      background-color: #1e40af;
+    }
+
+    #lista-agendamentos {
+      width: 100%;
+      max-width: 1000px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background-color: #f1f5f9;
+      font-weight: bold;
+    }
+
+    tr:hover {
+      background-color: #f9fafb;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-right: 5px;
+    }
+
+    .btn-excluir {
+      background-color: #ef4444;
+      color: #fff;
+    }
+
+    .btn-excluir:hover {
+      background-color: #dc2626;
+    }
+
+    .btn-editar {
+      background-color: #3b82f6;
+      color: #fff;
+    }
+
+    .btn-editar:hover {
+      background-color: #2563eb;
+    }
+
+    #btn-excluir-selecionados {
+      margin-top: 20px;
+      background-color: #10b981;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #btn-excluir-selecionados:hover {
+      background-color: #059669;
+    }
+
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead tr {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+
+      td {
+        padding: 10px;
+        border: none;
+        position: relative;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Gerenciar Agendamentos</h1>
+  <h2>Total de Agendamentos: <span id="quantidadeAgendamentos">0</span></h2>
+
+  <div class="nav-buttons">
+    <a href="admin_dashboard.html">Voltar</a>
+    <a href="home.html">Home</a>
+  </div>
+
+  <div id="lista-agendamentos"></div>
+
+  <button id="btn-excluir-selecionados">Excluir Selecionados</button>
+  
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'https://kiqvzarmwooveklezzfm.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Função para formatar data dd/mm/aaaa
+    function formatarDataBR(dataISO) {
+      const data = new Date(dataISO);
+      const dia = String(data.getDate()).padStart(2, '0');
+      const mes = String(data.getMonth() + 1).padStart(2, '0');
+      const ano = data.getFullYear();
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    async function verificarSessao() {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        alert("Usuário não autenticado.");
+        window.location.href = 'index.html';
+      } else {
+        carregarAgendamentos();
+      }
+    }
+
+    async function carregarAgendamentos() {
+      const { data, error, count } = await supabase
+        .from('agendamentos')
+        .select(`
+          id,
+          usuario_id,
+          data,
+          periodo,
+          servico_id,
+          veiculo,
+          status,
+          observacoes,
+          usuarios ( nome ),
+          servicos ( nome )
+        `, { count: 'exact' });
+
+      if (error) {
+        console.error('Erro ao carregar agendamentos:', error.message);
+        return;
+      }
+
+      document.getElementById('quantidadeAgendamentos').textContent = count;
+
+      const lista = document.getElementById('lista-agendamentos');
+
+      if (!data || data.length === 0) {
+        lista.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
+        return;
+      }
+
+      const tabela = document.createElement('table');
+      tabela.innerHTML = `
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selecionar-todos"></th>
+            <th>Usuário</th>
+            <th>Data</th>
+            <th>Período</th>
+            <th>Serviço</th>
+            <th>Veículo</th>
+            <th>Status</th>
+            <th>Observações</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      `;
+
+      const tbody = tabela.querySelector('tbody');
+
+      data.forEach(ag => {
+        const nomeUsuario = ag.usuarios?.nome || 'Desconhecido';
+        const nomeServico = ag.servicos?.nome || 'Desconhecido';
+        const dataFormatada = ag.data ? formatarDataBR(ag.data) : '-';
+        const observacoes = ag.observacoes || '-';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td data-label="Selecionar"><input type="checkbox" class="selecao" data-id="${ag.id}"></td>
+          <td data-label="Usuário">${nomeUsuario}</td>
+          <td data-label="Data">${dataFormatada}</td>
+          <td data-label="Período">${ag.periodo || '-'}</td>
+          <td data-label="Serviço">${nomeServico}</td>
+          <td data-label="Veículo">${ag.veiculo || '-'}</td>
+          <td data-label="Status">${ag.status || '-'}</td>
+          <td data-label="Observações">${observacoes}</td>
+          <td data-label="Ações">
+            <button class="btn btn-editar">Editar</button>
+            <button class="btn btn-excluir">Excluir</button>
+          </td>
+        `;
+
+        tr.querySelector('.btn-excluir').addEventListener('click', () => excluirAgendamento(ag.id));
+        tr.querySelector('.btn-editar').addEventListener('click', () => editarAgendamento(ag.id));
+
+        tbody.appendChild(tr);
+      });
+
+      lista.innerHTML = '';
+      lista.appendChild(tabela);
+
+      // Selecionar todos
+      const chkSelecionarTodos = document.getElementById('selecionar-todos');
+      chkSelecionarTodos.addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.selecao');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+      });
+    }
+
+    async function excluirAgendamento(id) {
+      if (!confirm("Tem certeza que deseja excluir este agendamento?")) return;
+
+      const { error } = await supabase.from('agendamentos').delete().eq('id', id);
+      if (error) {
+        alert("Erro ao excluir: " + error.message);
+      } else {
+        alert("Agendamento excluído com sucesso!");
+        carregarAgendamentos();
+      }
+    }
+
+    function editarAgendamento(id) {
+      // Redireciona para a página de edição com o id na URL
+      window.location.href = `editar-agendamento.html?id=${id}`;
+    }
+
+    async function excluirSelecionados() {
+      const checkboxes = [...document.querySelectorAll('.selecao:checked')];
+      if (checkboxes.length === 0) {
+        alert("Selecione ao menos um agendamento para excluir.");
+        return;
+      }
+
+      if (!confirm(`Tem certeza que deseja excluir ${checkboxes.length} agendamento(s)?`)) return;
+
+      const ids = checkboxes.map(cb => cb.getAttribute('data-id'));
+
+      const { error } = await supabase.from('agendamentos').delete().in('id', ids);
+
+      if (error) {
+        alert("Erro ao excluir: " + error.message);
+      } else {
+        alert("Agendamentos excluídos com sucesso!");
+        carregarAgendamentos();
+      }
+    }
+
+    document.getElementById('btn-excluir-selecionados').addEventListener('click', excluirSelecionados);
+
+    verificarSessao();
+  </script>
+</body>
+</html>

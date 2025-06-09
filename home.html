@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home - Lava-Car</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #eee;
+      text-align: center;
+      padding: 2rem;
+    }
+    header {
+      margin-bottom: 2rem;
+    }
+    #logo {
+      width: 150px;
+      margin-bottom: 1rem;
+    }
+    button {
+      background-color: #1e90ff;
+      border: none;
+      color: white;
+      padding: 1rem 2rem;
+      margin: 0.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0f67d1;
+    }
+
+    /* Modal */
+    #modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    #modal .modal-content {
+      background: #222;
+      padding: 20px 30px;
+      border-radius: 10px;
+      color: #eee;
+      max-width: 90%;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+    #modal .close-btn {
+      margin-top: 15px;
+      background-color: #e74c3c;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    #modal .close-btn:hover {
+      background-color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img id="logo" src="img/logo.png" alt="Logo Lava-Car" />
+    <h1>Bem-vindo ao TownPark</h1>
+  </header>
+
+  <main>
+    <button id="btnAgendar">Agendar</button>
+    <button id="btnMeusAgendamentos">Meus Agendamentos</button>
+    <button id="btnPerfil">Perfil</button>
+    <button id="btnAdmin">Painel Administrativo</button>
+    <button id="btnSair">Sair</button>
+  </main>
+
+  <!-- Modal para mensagens -->
+  <div id="modal">
+    <div class="modal-content">
+      <div id="modalMensagem"></div>
+      <button class="close-btn" onclick="fecharModal()">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Script principal -->
+  <script>
+    // Inicializa o Supabase
+    const supabase = window.supabase.createClient(
+      'https://kiqvzarmwooveklezzfm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXZ6YXJtd29vdmVrbGV6emZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjA0MTMsImV4cCI6MjA2MTYzNjQxM30.aW2IAN1xlL8HOZfKqZnGr-7Lw5Ay-AA4MwT-E7dK1A8'
+    );
+
+    // Função para mostrar modal com mensagem
+    function mostrarModal(mensagem) {
+      const modal = document.getElementById('modal');
+      const msg = document.getElementById('modalMensagem');
+      msg.textContent = mensagem;
+      modal.style.display = 'flex';
+    }
+
+    // Função para fechar modal
+    function fecharModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    // Verifica sessão do usuário, redireciona para login se não estiver logado
+    async function verificarSessao() {
+      const { data, error } = await supabase.auth.getUser();
+      if (!data?.user || error) {
+        window.location.href = 'index.html';
+      } else {
+        console.log("Usuário logado:", data.user.id);
+      }
+    }
+
+    // Verifica se usuário é admin consultando a coluna "role"
+    async function verificarSeAdmin() {
+      const { data: userData, error: authError } = await supabase.auth.getUser();
+      if (authError || !userData?.user) return false;
+      
+      const userId = userData.user.id;
+
+      mostrarModal('Verificando permissão...');
+
+      const { data: userInfo, error } = await supabase
+        .from('usuarios')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Erro ao verificar permissão:', error);
+        mostrarModal('Erro ao verificar permissão: ' + error.message);
+        return false;
+      }
+
+      if (userInfo?.role === 'admin') {
+        fecharModal();
+        return true;
+      } else {
+        mostrarModal('Acesso negado. Você não é um administrador.');
+        return false;
+      }
+    }
+
+    // Evento ao carregar a página
+    window.addEventListener('DOMContentLoaded', () => {
+      verificarSessao();
+
+      document.getElementById("btnAgendar").addEventListener("click", () => {
+        window.location.href = "agendar.html";
+      });
+
+      document.getElementById("btnPerfil").addEventListener("click", () => {
+        window.location.href = "perfil.html";
+      });
+
+      document.getElementById("btnMeusAgendamentos").addEventListener("click", () => {
+        window.location.href = "meus-agendamentos.html";
+      });
+
+      document.getElementById("btnAdmin").addEventListener("click", async () => {
+        const isAdmin = await verificarSeAdmin();
+        if (isAdmin) {
+          window.location.href = "admin_dashboard.html";
+        }
+      });
+
+      document.getElementById("btnSair").addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.href = "index.html";
+      });
+    });
+  </script>
+</body>
+</html>
